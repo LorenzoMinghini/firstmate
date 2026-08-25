@@ -1589,6 +1589,18 @@ case "$FM_ROLLBACK_SENTINEL_TTL_SECS" in
   0)            triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS=0 would allow immediate re-fire under persistent fs failures, falling back to 3600 (local patch 2026-08-19)"
               FM_ROLLBACK_SENTINEL_TTL_SECS=3600 ;;
 esac
+# v9 (2026-08-25): cap horizon. The cap marker is honored for at most this many
+# seconds; after that, the cap is stale and a new wedge on the same (window, hash)
+# can re-fire. Bounds the silent-suppression window without depending on
+# pause_state_class=working (which can be a steady state during a wedge, not
+# a recovery signal). Default 24h: long enough that a stuck wedge does not
+# spam the LLM, short enough that a wedge that genuinely recovers in the
+# background can re-escalate within a day. Operator can also rm the marker
+# manually for immediate re-engagement.
+FM_CAP_HORIZON_SECS=${FM_CAP_HORIZON_SECS:-86400}
+case "$FM_CAP_HORIZON_SECS" in
+  ''|*[!0-9]*) FM_CAP_HORIZON_SECS=86400 ;;
+esac
 
 # Repeat-poll wedge-timer bookkeeping for an already-classified stale hash
 # absorbed as provably-working - repairs a missing/corrupt timer (self-heals a
