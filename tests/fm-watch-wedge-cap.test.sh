@@ -1138,28 +1138,19 @@ test_wedge_cap_operator_can_rm_marker() {
 
   : > "$out"
   PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
-    FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=240 FM_POLL=1 FM_SIGNAL_GRACE=1 \
+    FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=1 FM_POLL=1 FM_SIGNAL_GRACE=1 \
     FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_WEDGE_MAX_ESCALATIONS=$max "$WATCH" > "$out" &
   pid=$!
-  # The counter is at FM_WEDGE_MAX_ESCALATIONS (climbed to cap earlier); with the
-  # marker gone, the very next wedge_timer_check call increments to max+1 and
-  # re-fires the cap immediately. This is expected: counter NOT reset on operator
-  # rm (v9 doesn't reset counter anywhere). Use a fresh counter via hash change
-  # instead - that's covered by the hash-change test above. For this test we
-  # just verify the marker stays gone and the cap eventually fires again.
-  # Actually the count was 3 (=max), so next increment makes n=4 < 10, normal
-  # escalation, not cap. Need to wait for more polls. Use STALE_ESCALATE_SECS=1
-  # for fast cycling. Skip this subtlety; verify only that the marker stays
-  # gone and the watcher didn't exit immediately.
-  if ! wait_poll_cycle "$state" "$pid"; then
-    wait "$pid" 2>/dev/null || true
-    ack_stopped_cycle "$state" || true
-  fi
-  reap "$pid"
+  # The counter is at FM_WEDGE_MAX_ESCALATIONS (=max=3); with the marker gone,
+  # the next wedge_timer_check call increments to max+1 and re-fires the cap
+  # once FM_STALE_ESCALATE_SECS elapses. Verify the re-fire actually reaches
+  # the drain as a fresh PERMANENTLY-WEDGED wake.
+  wait_for_exit "$pid" 100 || { reap "$pid"; fail "watcher did not exit after operator rm"; }
+  grep -F "PERMANENTLY-WEDGED" "$out" >/dev/null || fail "operator rm did not result in a fresh PERMANENTLY-WEDGED wake: $(cat "$out")"
+  [ -e "$marker" ] || fail "cap marker was not recreated after operator rm re-fire"
   ack_stopped_cycle "$state" || true
-  [ ! -e "$marker" ] || fail "cap marker was recreated after operator rm"
   unset FM_FAKE_CREW_STATE
-  pass "the operator can manually remove the cap marker for immediate re-engagement"
+  pass "the operator can manually remove the cap marker for immediate re-engagement and a fresh PERMANENTLY-WEDGED wake fires"
 }
 
 test_wedge_cap_validates_invalid_override() {
