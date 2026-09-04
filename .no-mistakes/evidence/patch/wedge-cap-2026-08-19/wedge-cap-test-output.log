@@ -1,0 +1,10 @@
+=== fm-watch-wedge-cap.test.sh local run (HEAD 0361b89) ===
+ok - wedge cap fires PERMANENTLY-WEDGED at FM_WEDGE_MAX_ESCALATIONS and writes the per-hash marker
+ok - subsequent polls for the capped hash are silent - no additional terminal wakes fire
+ok - the cap marker persists across pause: and unpause transitions when the worker is not actively recovered
+ok - the cap is bound by FM_CAP_HORIZON_SECS and re-fires after the horizon elapses
+ok - the cap is honored within FM_CAP_HORIZON_SECS - no additional terminal wakes fire
+ok - the cap marker is keyed on (window, hash) and a new hash naturally invalidates it
+ok - the operator can manually remove the cap marker for immediate re-engagement and a fresh PERMANENTLY-WEDGED wake fires
+ok - FM_WEDGE_MAX_ESCALATIONS and FM_CAP_HORIZON_SECS both reject 0 and non-integer values, falling back to defaults
+=== exit=0 ===

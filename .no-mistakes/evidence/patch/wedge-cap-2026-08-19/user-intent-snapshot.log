@@ -1,0 +1,79 @@
+=== PERMANENTLY-WEDGED wake reason (bin/fm-watch.sh:667) ===
+        # the cap kept firing every ~STALE_ESCALATE_SECS. v4 writes the marker
+        # FIRST with an explicit check, and rolls the marker back on fm_wake_append
+        # failure. Either error path exits 1 with no marker AND no queue entry,
+        # so the next poll retries the cap from scratch - loud, observable,
+        # not silently suppressed. Success path leaves both marker and queue
+        # entry durable before `wake` runs.
+        if [ "$n" -ge "$FM_WEDGE_MAX_ESCALATIONS" ]; then
+          reason="stale: $win (idle ${age}s, possible wedge, escalation $n, PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=$FM_WEDGE_MAX_ESCALATIONS reached - no further wakes for this (window, hash) until FM_CAP_HORIZON_SECS (default 86400s) elapses, the pane hash changes, or operator manually removes STATE/.wedge-permanent-<key>-<hash12>; local patch 2026-08-19)"
+          if ! date +%s > "$permanent_marker" 2>/dev/null; then
+            triage_log "wedge permanent marker write FAILED: $permanent_marker - aborting cap without firing terminal wake (next poll will retry)"
+            exit 1
+          fi
+          if ! fm_wake_append stale "$win" "$reason"; then
+            rm -f "$permanent_marker"
+            triage_log "wedge fm_wake_append FAILED after marker write, rolled back $permanent_marker"
+            exit 1
+          fi
+          rm -f "$since_file"
+          clear_write_tracking "$(window_key "$win")"
+          triage_log "wedge permanently capped: $win (escalation $n, max $FM_WEDGE_MAX_ESCALATIONS, hash ${hash:0:12})"
+          wake "$reason"
+
+=== docs/configuration.md line 713 ===
+FM_WEDGE_DEMAND_INSPECT_COUNT=3    # consecutive provably-working stale escalations on the same unchanged pane before demand-deep-inspection is added
+FM_WEDGE_MAX_ESCALATIONS=10    # consecutive wedge escalations on the same (window, hash) before the watcher emits one terminal "PERMANENTLY-WEDGED" wake and writes STATE/.wedge-permanent-<key>-<hash12>; subsequent polls for that hash short-circuit until FM_CAP_HORIZON_SECS elapse, the pane hash changes, or the operator manually removes the marker; rejected values (0, non-integer) fall back to 10 with a triage_log warning (local patch 2026-08-19)
+FM_CAP_HORIZON_SECS=86400   # seconds a wedge cap marker is honored; a wedge older than this on the same (window, hash) can re-fire. Bounds the silent-suppression window without depending on pause_state_class=working (which can be a steady state during a wedge, not a recovery signal); rejected values (0, non-integer) fall back to 86400 with a triage_log warning (local patch 2026-08-19)
+
+=== docs/architecture.md line 14 ===
+Repeated provably-working stale escalations on the same unchanged pane add an escalation count to the wake reason and, at `FM_WEDGE_DEMAND_INSPECT_COUNT`, a `demand-deep-inspection` marker.
+Past `FM_WEDGE_MAX_ESCALATIONS` consecutive wedge escalations on the same (window, hash), the watcher emits one terminal `PERMANENTLY-WEDGED` wake and writes `STATE/.wedge-permanent-<key>-<hash12>`; subsequent polls for that hash short-circuit until `FM_CAP_HORIZON_SECS` elapse, the pane hash changes, or the operator manually removes the marker.
+A pane holding a file newer than the start of its own quiet window, anywhere in the worktree recorded for that task, is deferred instead of escalated, because a crew writing source, then tests, then documentation behind a static pane is liveness that neither pane quietness nor the run step can show.
+
+=== PATCHES.md presence check ===
+ls: cannot access 'PATCHES.md': No such file or directory
+PATCHES.md is absent (correctly dropped from distro)
+
+=== git ls-files PATCHES* (must be empty) ===
+(no PATCHES files tracked - correctly dropped)
+
+=== bin/fm-watch.sh wedge_timer_check early-return paths (cap-suppression) ===
+# never per poll.
+wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-file> <task> <hash>
+  local win=$1 since_file=$2 label=$3 escalation_file=$4 task=$5 hash=$6 since age n reason permanent_marker marker_ts
+  # LOCAL PATCH (2026-08-19, v9 2026-08-25): if this hash was already capped,
+  # stop firing wakes for it UNTIL the cap horizon (FM_CAP_HORIZON_SECS, default
+  # 24h) passes. The marker is keyed on (window, hash) and stores its fire
+  # timestamp in the file content (date +%s); a cap older than the horizon is
+  # ignored, so a wedge that persists beyond the horizon can re-fire. A hash
+  # change also naturally invalidates the marker (different key). No auto-lift
+  # is performed on recovery - pause_state_class=working can be a steady state
+  # during a wedge, not a recovery signal, so the v6/v7 lift sites were
+  # over-eager. Operator can also `rm` the marker manually for immediate
+  # re-engagement.
+  if [ -z "$hash" ]; then
+    # Defensive fallback: without a hash, fall back to the v1 window-scoped
+    # marker name so the cap still suppresses retries for this window even if
+    # a future caller forgets to thread the hash. Trade-off: a fresh stale hash
+    # in the same window will also be suppressed (the v1 behavior). Logged so
+    # the missing-hash regression is visible.
+    triage_log "wedge_timer_check: missing hash parameter, falling back to window-scoped marker for $win"
+    permanent_marker="$STATE/.wedge-permanent-$(window_key "$win")"
+    if [ -e "$permanent_marker" ]; then
+      marker_ts=$(cat "$permanent_marker" 2>/dev/null || true)
+      case "$marker_ts" in
+        ''|*[!0-9]*) marker_ts=0 ;;
+      esac
+      if [ $(( $(date +%s) - marker_ts )) -lt "$FM_CAP_HORIZON_SECS" ]; then
+        return 0
+      fi
+    fi
+  else
+    permanent_marker="$STATE/.wedge-permanent-$(window_key "$win")-${hash:0:12}"
+    if [ -e "$permanent_marker" ]; then
+      # v9 (2026-08-25): cap horizon check. The marker file's content is the
+      # cap-fire timestamp (date +%s). If the cap fired more than
+      # FM_CAP_HORIZON_SECS ago, the cap is stale and a new wedge on this
+      # (window, hash) can re-fire. This bounds the silent-suppression
+      # window without depending on pause_state_class (which can be a steady
