@@ -1605,6 +1605,22 @@ case "$FM_CAP_HORIZON_SECS" in
               FM_CAP_HORIZON_SECS=86400 ;;
 esac
 
+# _wedge_cap_rollback: helper for wedge_timer_check's v14 cap-failure paths.
+# Resets all per-window wedge state so the next poll re-accumulates from 1
+# instead of inheriting the saturated escalation counter and the 500s-ago
+# stale timer that would otherwise amplify a single cap-marker write failure
+# into a wake-queue flood. See the v14 comment block in wedge_timer_check
+# for the failure-modes this closes.
+#
+# _wedge_cap_rollback <window> <key> <escalation-file> <since-file>
+_wedge_cap_rollback() {
+  local _win=$1 _key=$2 _esc=$3 _since=$4
+  : > "$_esc" 2>/dev/null || true
+  date +%s > "$_since" 2>/dev/null || true
+  clear_write_tracking "$_key" 2>/dev/null || true
+  return 0
+}
+
 # Repeat-poll wedge-timer bookkeeping for an already-classified stale hash
 # absorbed as provably-working - repairs a missing/corrupt timer (self-heals a
 # watcher restart between recording the hash and recording the timer), or
