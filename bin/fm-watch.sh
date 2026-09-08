@@ -1612,14 +1612,51 @@ esac
 # into a wake-queue flood. See the v14 comment block in wedge_timer_check
 # for the failure-modes this closes.
 #
+# v15 (2026-09-08, Greptile review of v14): the original v14 used `|| true`
+# on every state-reset line, so a rollback that itself failed (the SAME fs
+# failure that caused the marker write to fail) would silently preserve the
+# saturation and the queue-flood behavior v14 aimed to stop. v15 detects
+# rollback failures explicitly: if any of the three resets fails, write a
+# `.wedge-rollback-failed-<key>` sentinel with the failure timestamp and the
+# first failing path name. Returns 1 if any reset failed, 0 if all succeeded.
+#
+# The cap path checks for the sentinel at the top of wedge_timer_check
+# (within FM_ROLLBACK_SENTINEL_TTL_SECS, default 3600s) and short-circuits
+# with no wake, no marker write - the operator gets a single observed
+# failure per wedge-event instead of a queue-flood. The sentinel expires
+# naturally after the TTL so a transient fs condition does not
+# permanently silence the wedge (operator rm or wait for TTL).
+#
 # _wedge_cap_rollback <window> <key> <escalation-file> <since-file>
 _wedge_cap_rollback() {
-  local _win=$1 _key=$2 _esc=$3 _since=$4
-  : > "$_esc" 2>/dev/null || true
-  date +%s > "$_since" 2>/dev/null || true
+  local _win=$1 _key=$2 _esc=$3 _since=$4 _failed=0 _first_fail=""
+  : > "$_esc" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(escalation-file)}"; }
+  date +%s > "$_since" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(since-file)}"; }
   clear_write_tracking "$_key" 2>/dev/null || true
+  if [ "$_failed" -ne 0 ]; then
+    # Write the sentinel so the next poll sees it (within TTL) and
+    # short-circuits without writing a durable wake. The sentinel's content
+    # is the timestamp of the failure + the first failing reset.
+    local _sentinel="$STATE/.wedge-rollback-failed-$_key"
+    { printf '%s %s\n' "$(date +%s 2>/dev/null || echo 0)" "$_first_fail"; } 2>/dev/null > "$_sentinel" || true
+    return 1
+  fi
   return 0
 }
+
+# FM_ROLLBACK_SENTINEL_TTL_SECS: how long the wedge-rollback-failed sentinel
+# silences the wedge path (no wake, no marker) before allowing a normal re-
+# escalation. Default 3600s - long enough to outlast a transient fs blip,
+# short enough that an operator who's resolved the underlying issue does not
+# have to wait a day. Operator can also `rm` the sentinel for immediate re-
+# engagement.
+FM_ROLLBACK_SENTINEL_TTL_SECS=${FM_ROLLBACK_SENTINEL_TTL_SECS:-3600}
+case "$FM_ROLLBACK_SENTINEL_TTL_SECS" in
+  ''|*[!0-9]*) triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS='$FM_ROLLBACK_SENTINEL_TTL_SECS' is not a positive integer, falling back to 3600 (local patch 2026-08-19)"
+              FM_ROLLBACK_SENTINEL_TTL_SECS=3600 ;;
+  0)            triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS=0 would allow immediate re-fire under persistent fs failures, falling back to 3600 (local patch 2026-08-19)"
+              FM_ROLLBACK_SENTINEL_TTL_SECS=3600 ;;
+esac
 
 # Repeat-poll wedge-timer bookkeeping for an already-classified stale hash
 # absorbed as provably-working - repairs a missing/corrupt timer (self-heals a
