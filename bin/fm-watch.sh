@@ -1629,7 +1629,7 @@ esac
 #
 # _wedge_cap_rollback <window> <key> <escalation-file> <since-file>
 _wedge_cap_rollback() {
-  local _win=$1 _key=$2 _esc=$3 _since=$4 _failed=0 _first_fail=""
+  local _win=$1 _key=$2 _esc=$3 _since=$4 _failed=0 _first_fail="" _sentinel_rc=0
   : > "$_esc" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(escalation-file)}"; }
   date +%s > "$_since" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(since-file)}"; }
   clear_write_tracking "$_key" 2>/dev/null || true
@@ -1637,8 +1637,30 @@ _wedge_cap_rollback() {
     # Write the sentinel so the next poll sees it (within TTL) and
     # short-circuits without writing a durable wake. The sentinel's content
     # is the timestamp of the failure + the first failing reset.
+    #
+    # v16 (2026-09-09, Greptile review of v15): the v15 sentinel write
+    # used `{ printf ...; } 2>/dev/null > "$sentinel" || true` which
+    # swallows BOTH the printf's stderr AND bash's redirect-failure
+    # diagnostic. If the SAME fs failure that broke the marker write
+    # also blocks the sentinel write, the rollback returns 1 (success-
+    # like) and the next poll re-escalates with no suppression - the
+    # queue-flood v15 closed is re-introduced under persistent fs
+    # failure. v16 captures the redirect's exit status explicitly so
+    # the rollback can return a distinct code (1 = rollback reset
+    # failed AND sentinel write failed; 2 would be ambiguous here) so
+    # the cap path can distinguish the failure modes.
     local _sentinel="$STATE/.wedge-rollback-failed-$_key"
-    { printf '%s %s\n' "$(date +%s 2>/dev/null || echo 0)" "$_first_fail"; } 2>/dev/null > "$_sentinel" || true
+    _sentinel_rc=0
+    { printf '%s %s\n' "$(date +%s 2>/dev/null || echo 0)" "$_first_fail" > "$_sentinel"; } 2>/dev/null || _sentinel_rc=$?
+    if [ "$_sentinel_rc" -ne 0 ]; then
+      # Sentinel write ALSO failed - the supervision daemon will restart
+      # the watcher with the saturated counter and expired timer intact.
+      # The cap path takes exit 2 below; the next poll re-escalates and
+      # re-publishes PERMANENTLY-WEDGED, but the operator's heartbeat /
+      # wedge-cap-fail log lines surface every retry so the fs condition
+      # is visible in operator-facing logs.
+      return 2
+    fi
     return 1
   fi
   return 0
