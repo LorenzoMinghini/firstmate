@@ -1,0 +1,1 @@
+stale: demo:fm-wedge-cap-e2e (idle 503s, possible wedge, escalation 4, PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=4 reached - no further wakes for this WINDOW until FM_CAP_HORIZON_SECS (default 86400s) elapses or operator manually removes BOTH STATE/.wedge-permanent-<key> AND STATE/.wedge-permanent-<key>-<hash12>; local patch 2026-08-19)
