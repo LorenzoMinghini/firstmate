@@ -507,7 +507,7 @@ test_wedge_cap_rollback_failure_sets_sentinel_v15() {
   sentinel="$state/.wedge-rollback-failed-$key"
 
   PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
-    FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=999 FM_POLL=1 FM_SIGNAL_GRACE=1 \
+    FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=999 FM_POLL=1 FM_SIGNAL_GRACE=1 FM_BUSY_TURN_MAX_SECS=1 \
     FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_WEDGE_MAX_ESCALATIONS=$max "$WATCH" > "$out" &
   pid=$!
   if ! wait_poll_cycle "$state" "$pid"; then
@@ -518,9 +518,11 @@ test_wedge_cap_rollback_failure_sets_sentinel_v15() {
   n=1
   while [ "$n" -le "$max" ]; do
     echo $(( $(date +%s) - 500 )) > "$state/.stale-since-$key"
+    touch -d '2 seconds ago' "$state/wedge-cap-churning.meta" 2>/dev/null || \
+      perl -e 'utime(time()-2, time()-2, $ARGV[0])' "$state/wedge-cap-churning.meta"
     : > "$out"
     PATH="$fakebin:$PATH" FM_FAKE_TMUX_WINDOW="$window" FM_FAKE_TMUX_CAPTURE="$capture_file" \
-      FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=240 FM_POLL=1 FM_SIGNAL_GRACE=1 \
+      FM_STATE_OVERRIDE="$state" FM_CREW_STATE_BIN="$fakebin/fm-crew-state.sh" FM_STALE_ESCALATE_SECS=240 FM_POLL=1 FM_SIGNAL_GRACE=1 FM_BUSY_TURN_MAX_SECS=1 \
       FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_WEDGE_MAX_ESCALATIONS=$max "$WATCH" > "$out" &
     pid=$!
     wait_for_exit "$pid" 100 || { reap "$pid"; fail "round $n watch failed: $(cat "$out")"; }

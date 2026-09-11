@@ -1646,9 +1646,13 @@ _wedge_cap_rollback() {
     # like) and the next poll re-escalates with no suppression - the
     # queue-flood v15 closed is re-introduced under persistent fs
     # failure. v16 captures the redirect's exit status explicitly so
-    # the rollback can return a distinct code (1 = rollback reset
-    # failed AND sentinel write failed; 2 would be ambiguous here) so
-    # the cap path can distinguish the failure modes.
+    # the rollback can return a distinct code for the cap path's exit
+    # semantics:
+    #   - return 0: rollback reset succeeded (sentinel not written)
+    #   - return 1: rollback reset failed AND sentinel written
+    #   - return 2: rollback reset failed AND sentinel write ALSO failed
+    # The cap path maps these to exit 1, 2, and 3 respectively so the
+    # operator-facing triage_log lines can distinguish them.
     local _sentinel="$STATE/.wedge-rollback-failed-$_key"
     _sentinel_rc=0
     { printf '%s %s\n' "$(date +%s 2>/dev/null || echo 0)" "$_first_fail" > "$_sentinel"; } 2>/dev/null || _sentinel_rc=$?
