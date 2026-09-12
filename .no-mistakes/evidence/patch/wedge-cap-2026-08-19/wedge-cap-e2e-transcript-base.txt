@@ -1,0 +1,112 @@
+================================================================================
+fm-watch wedge cap — end-to-end operator transcript
+change under test : watcher bin/ tree = /tmp/wedge-cap-base-bin
+watcher binary    : /tmp/wedge-cap-base-bin/bin/fm-watch.sh
+NOTE              : BEFORE the patch (base commit 9074f9d2) - no cap exists;
+                    every poll below re-engages the LLM and the churn phase floods
+                    one paid wake per poll. FM_WEDGE_MAX_ESCALATIONS is ignored.
+scenario          : Pi ship worker window 'card5:m4-ship-worker' wedged behind a
+                    ticking elapsed-time footer (pane hash churns every poll),
+                    busy verdict from a real fm-busy-event record, no completed
+                    turn. FM_WEDGE_MAX_ESCALATIONS=3, FM_CAP_HORIZON_SECS=86400.
+surfaces shown    : QUEUE rows = the durable wake records the supervised LLM loop
+                    re-engages on (each row ~ one paid API call); WATCHER SURFACED
+                    = the reason line printed to the wake output; MARKER = the
+                    STATE files an operator inspects / rm's.
+================================================================================
+
+### Phase 1 — priming poll (busy pane, below busy-turn bound)
+-- expected: wedge timer repaired, NO wake, NO cap marker
+   QUEUE: (empty - nothing surfaced this round)
+   WATCHER: silent (absorbed; no wake)
+   MARKER: (none)
+
+### Phase 2 — stale escalations 1 and 2 (each after STALE_ESCALATE_SECS idle)
+-- each of these wakes is one paid LLM re-engagement in the unattended loop;
+-- the pre-patch behavior was that this never stopped.
+-- ROUND: escalation 1
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 1)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 1)
+-- ROUND: escalation 2
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 2)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 2)
+   MARKER: (none)
+
+### Phase 3 — escalation 3 == FM_WEDGE_MAX_ESCALATIONS: the cap fires
+-- expected: exactly ONE terminal PERMANENTLY-WEDGED wake, then BOTH markers
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+   MARKER: (none)
+   window-scoped marker content (cap-fire epoch): MISSING
+-- operator triage log, cap line:
+
+### Phase 4 — hash churns every poll for 12 polls (the ticking footer)
+-- expected: TOTAL SILENCE. The window-scoped marker gates every fresh hash;
+-- without the cap this loop re-engaged the LLM once per fresh hash.
+-- churn poll 1 (fresh pane hash 48a5ca0b0cc8...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 2 (fresh pane hash dee75b8aec3a...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 3 (fresh pane hash 706efd69737d...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 6, demand-deep-inspection: same pane has wedge-escalated 6 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 6, demand-deep-inspection: same pane has wedge-escalated 6 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 4 (fresh pane hash 3cfa928d0311...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 7, demand-deep-inspection: same pane has wedge-escalated 7 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 7, demand-deep-inspection: same pane has wedge-escalated 7 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 5 (fresh pane hash cc70ad380ecf...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 8, demand-deep-inspection: same pane has wedge-escalated 8 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 8, demand-deep-inspection: same pane has wedge-escalated 8 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 6 (fresh pane hash 402b7c6f73d7...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 9, demand-deep-inspection: same pane has wedge-escalated 9 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 9, demand-deep-inspection: same pane has wedge-escalated 9 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 7 (fresh pane hash 21f2f7adf6e5...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 10, demand-deep-inspection: same pane has wedge-escalated 10 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 10, demand-deep-inspection: same pane has wedge-escalated 10 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 8 (fresh pane hash b73ace7835cc...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 11, demand-deep-inspection: same pane has wedge-escalated 11 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 11, demand-deep-inspection: same pane has wedge-escalated 11 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 9 (fresh pane hash 5531369c46bc...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 12, demand-deep-inspection: same pane has wedge-escalated 12 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 12, demand-deep-inspection: same pane has wedge-escalated 12 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 10 (fresh pane hash a9b31dd31cac...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 13, demand-deep-inspection: same pane has wedge-escalated 13 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 13, demand-deep-inspection: same pane has wedge-escalated 13 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 11 (fresh pane hash 93cdaa57303a...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 14, demand-deep-inspection: same pane has wedge-escalated 14 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 14, demand-deep-inspection: same pane has wedge-escalated 14 times in a row - do not re-absorb on the run-step/pane state alone)
+-- churn poll 12 (fresh pane hash 7bb8ad25985c...)
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 15, demand-deep-inspection: same pane has wedge-escalated 15 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 15, demand-deep-inspection: same pane has wedge-escalated 15 times in a row - do not re-absorb on the run-step/pane state alone)
+-- markers still standing after 12 churned polls:
+   MARKER: (none)
+
+### Phase 5 — operator lift: rm BOTH markers, wedge re-fires
+-- expected: cap lifts; wedge re-escalates from escalation 1 (the escalation
+-- counter was reset when the cap fired), confirming the operator contract.
+   QUEUE: stale	card5:m4-ship-worker	stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 16, demand-deep-inspection: same pane has wedge-escalated 16 times in a row - do not re-absorb on the run-step/pane state alone)
+   WATCHER SURFACED: stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 16, demand-deep-inspection: same pane has wedge-escalated 16 times in a row - do not re-absorb on the run-step/pane state alone)
+
+### Final tally over the whole run
+   wake lines surfaced (see /tmp/no-mistakes-evidence/01M292EY1EX2C2RP8X5PZRSZHS/wedge-cap-e2e-wake-tally-base.txt):
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 10, demand-deep-inspection: same pane has wedge-escalated 10 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 11, demand-deep-inspection: same pane has wedge-escalated 11 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 12, demand-deep-inspection: same pane has wedge-escalated 12 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 14, demand-deep-inspection: same pane has wedge-escalated 14 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 502s, possible wedge, escalation 9, demand-deep-inspection: same pane has wedge-escalated 9 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 1)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 13, demand-deep-inspection: same pane has wedge-escalated 13 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 2)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 6, demand-deep-inspection: same pane has wedge-escalated 6 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 8, demand-deep-inspection: same pane has wedge-escalated 8 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 7, demand-deep-inspection: same pane has wedge-escalated 7 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 15, demand-deep-inspection: same pane has wedge-escalated 15 times in a row - do not re-absorb on the run-step/pane state alone)
+           1 stale: card5:m4-ship-worker (idle 505s, possible wedge, escalation 16, demand-deep-inspection: same pane has wedge-escalated 16 times in a row - do not re-absorb on the run-step/pane state alone)
+   PERMANENTLY-WEDGED terminal wakes for the entire wedge-event: 0 (expected 1)
+   stale escalation wakes before the cap: 2 (escalations 1 and 2)
+   wakes during 12 hash-churned polls under the cap: 0
+================================================================================

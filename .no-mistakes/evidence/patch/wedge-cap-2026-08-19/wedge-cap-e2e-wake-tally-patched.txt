@@ -1,0 +1,4 @@
+stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 1)
+stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 2)
+stale: card5:m4-ship-worker (idle 504s, possible wedge, escalation 3, PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wakes for this WINDOW until FM_CAP_HORIZON_SECS (default 86400s) elapses or operator manually removes BOTH STATE/.wedge-permanent-<key> AND STATE/.wedge-permanent-<key>-<hash12>; local patch 2026-08-19)
+stale: card5:m4-ship-worker (idle 503s, possible wedge, escalation 1)
