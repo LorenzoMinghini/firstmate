@@ -630,8 +630,17 @@ test_wedge_cap_marker_write_after_durable_wake_v13() {
       FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_WEDGE_MAX_ESCALATIONS=$max \
       FM_WAKE_QUEUE="$dir/queue-parent/queue" "$WATCH" > "$out" &
     pid=$!
-    if ! wait_for_exit "$pid" 100; then
-      reap "$pid"; fail "round $n watch failed: $(cat "$out")"
+    set +e
+    wait "$pid" 2>/dev/null
+    round_status=$?
+    if [ "$n" -eq "$max" ]; then
+      # Round max is expected to exit 1: v13 writes no marker when
+      # fm_wake_append fails and exits 1 so the next poll retries the
+      # cap from scratch. Other rounds must exit 0 or the watcher
+      # logic regressed.
+      [ "$round_status" -eq 1 ] || fail "round max expected exit 1 (v13 no-marker append-failure path), got $round_status: $(cat "$out")"
+    else
+      [ "$round_status" -eq 0 ] || fail "round $n watch failed with exit $round_status: $(cat "$out")"
     fi
     if [ "$n" -lt "$max" ]; then
       ack_stopped_cycle "$state" || fail "round $n ack failed"
