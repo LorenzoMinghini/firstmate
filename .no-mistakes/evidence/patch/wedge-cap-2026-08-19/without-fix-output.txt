@@ -1,0 +1,22 @@
+Marker paths:
+  per-hash: /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail-593ee9db5451
+  window:   /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail
+Prime complete
+Escalation counter before firing round: 1 (expected 1)
+Planted per-hash marker blocker
+
+=== FIRING ROUND RESULT ===
+Exit code: 1
+stderr content:
+/home/nostradamus/.no-mistakes/worktrees/8b845ac61faf/01M2G6AGNKQ8M460MY1XFYZERB/bin/fm-watch.sh: line 1254: /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail-593ee9db5451: Is a directory
+[end stderr]
+
+=== ASSERTIONS ===
+FAIL: bash 'Is a directory' diagnostic leaked to stderr (the 1ac0c79 fix is broken)
+/home/nostradamus/.no-mistakes/worktrees/8b845ac61faf/01M2G6AGNKQ8M460MY1XFYZERB/bin/fm-watch.sh: line 1254: /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail-593ee9db5451: Is a directory
+OK: triage_log 'per-hash marker write FAILED' emitted
+[2026-09-14T19:20:16+0200] wedge per-hash marker write FAILED after wake queued: /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail-593ee9db5451 - cap state rolled back (escalation counter and stale timer reset); operator must intervene (rm /tmp/evidence-per-hash-stderr-test.nNvQKX/per-hash-marker-fail/state/.wedge-permanent-test_fm-per-hash-marker-fail-593ee9db5451 or wait for FM_CAP_HORIZON_SECS)
+OK: exit code 1 (rollback succeeded)
+
+=== RESULT ===
+FAIL: 1 assertion(s) failed
