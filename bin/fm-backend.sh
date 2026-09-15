@@ -294,6 +294,24 @@ fm_backend_validate_spawn() {  # <name>
   return 1
 }
 
+# fm_backend_herdr_agent_name_cap: herdr's `agent start <NAME>` caps the name
+# length at FM_HERDR_AGENT_NAME_MAX characters (verified against real herdr;
+# over-cap names fail with `invalid_agent_name`: "agent name must start with a
+# lowercase letter and contain only lowercase letters, digits, '-' or '_'
+# (1-32 characters)"). fm-spawn.sh and fm-control.sh apply this BEFORE creating
+# any pane, tab, workspace, or agent, so a task id over the cap fails closed
+# rather than half-creating a stranded endpoint whose inner agent-start would
+# silently error. The cap is a length rule; herdr's stricter character set
+# (lowercase, digits, '-', '_') is intentionally NOT enforced here because
+# firstmate's existing fm_task_id_creation_valid accepts uppercase letters
+# and dots, and tightening that is a separate, broader scope.
+FM_HERDR_AGENT_NAME_MAX=32
+
+fm_backend_herdr_agent_name_within_cap() {  # <task-id>
+  local id=$1
+  [ "${#id}" -le "$FM_HERDR_AGENT_NAME_MAX" ]
+}
+
 # fm_backend_required_tools: the backend-SPECIFIC CLI tools a firstmate home on
 # <backend> genuinely requires, beyond firstmate's universal toolchain (owned by
 # docs/configuration.md "Toolchain" and bootstrap's COMMON list). This is the
@@ -336,9 +354,14 @@ fm_backend_required_tool_available() {  # <backend> <tool>
 # errors) if the file or key is absent. Mirrors the ad hoc `grep '^key=' |
 # tail -1 | cut -d= -f2-` snippet every fm-*.sh script used to repeat inline.
 fm_meta_get() {  # <meta-file> <key>
-  local meta=$1 key=$2
+  local meta=$1 key=$2 line value=''
   [ -f "$meta" ] || return 0
-  grep "^$key=" "$meta" 2>/dev/null | tail -1 | cut -d= -f2- || true
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      "$key="*) value=${line#*=} ;;
+    esac
+  done < "$meta" 2>/dev/null || true
+  printf '%s' "$value"
 }
 
 # fm_backend_of_meta: the backend recorded in <meta-file>, defaulting to
@@ -879,12 +902,17 @@ fm_backend_target_exists() {  # <backend> <target> [expected-label]
 #   ambiguous  - the endpoint exists but its process cannot be attributed.
 #   unreadable - a target or inventory read failed or contradicted itself.
 #   unverified - this backend has no recovery classifier.
-# Only `dead` and `missing` license recovery. The tmux adapter requires a
-# successful session inventory and returns `missing` only when it omits the
-# exact window; the Herdr adapter reuses its husk
-# classifier. Zellij remains unverified because its secondmate ghost-tab and
-# agent-process recovery path has not been empirically validated. Orca and cmux
-# do not support secondmate spawns.
+# Only `dead` and `missing` license recovery. Every `alive` is proven at
+# process level through the shared classifier in bin/fm-agent-process-lib.sh,
+# never from a registration or a rendered title alone. The tmux adapter
+# requires a successful session inventory and returns `missing` only when it
+# omits the exact window; the Herdr adapter reuses its strict husk classifier -
+# which verifies a registered agent against `pane process-info` and the real
+# process table, so a registration Herdr kept over a shell-only pane reads
+# `dead` here (issue #4115) - then maps a positively stopped session server to
+# `missing` only in this recovery-grade view. Zellij remains unverified because
+# its secondmate ghost-tab and agent-process recovery path has not been
+# empirically validated. Orca and cmux do not support secondmate spawns.
 fm_backend_agent_state() {  # <backend> <target>
   local backend=$1 target=$2
   fm_backend_source "$backend" || { printf 'unverified'; return 0; }
