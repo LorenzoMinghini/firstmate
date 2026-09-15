@@ -1,0 +1,140 @@
+===================================================================
+Branch: fm/fm-spawn-herdr-name-cap
+Base:   a6618ddc690b4e613b62c6c4a3f6df4808a778b1
+Target: e1f6ec3fd21fa0fa381600040101f77c8c602617
+Date:   2026-09-15T01:51:26Z
+Repo:   01M2HB2ZMKJD6WQ8S0E1E3HHA4
+===================================================================
+
+User intent: this repo's spawn/control tooling must surface the 32-char
+herdr agent-name cap BEFORE creating any endpoint. Reproduces the live
+failure from 2026-09-15 (40-char id 'm5-audit-chain-test-double-contamination'
+where herdr silently rejected an over-cap name while the wrapper reported
+success and stranded the replacement endpoint).
+
+Test setup: FM_GATE_REFUSE_BYPASS=1 so the gate-refuse guard (which
+refuses all fleet ops from inside a no-mistakes gate worktree) does not
+fire. The cap check fires BEFORE any fleet mutation, so this bypass
+only affects the test harness, not the cap guard under test.
+
+===================================================================
+Scenario A: fresh fm-spawn --backend herdr with 40-char id
+===================================================================
+
+$ env -u NO_MISTAKES_GATE FM_GATE_REFUSE_BYPASS=1 FM_HOME=/tmp/tmp.yykIqk6rhk/home \
+    FM_SPAWN_NO_GUARD=1 \
+    bin/fm-spawn.sh 'm5-audit-chain-test-double-contamination' '/tmp/tmp.yykIqk6rhk/home/projects/none' \
+    --mode no-mistakes --yolo off --backend herdr
+
+error: herdr caps agent names at 32 characters (lowercase/digits/-/_), but task id 'm5-audit-chain-test-double-contamination' is 40 chars; pick a shorter id before spawning
+
+[exit code: 1]
+
+Operator reads: 'herdr caps agent names at 32 characters ... is 40 chars;
+pick a shorter id before spawning'. Spawn fails CLOSED before any pane,
+tab, workspace, or agent is created.
+
+===================================================================
+Scenario B: fm-control relaunch on the same 40-char id
+===================================================================
+
+Setup: a herdr meta already exists for the task (the meta file is
+written before this scenario runs), mimicking the live-failure state
+where an old agent endpoint exists for the too-long id.
+
+$ env -u NO_MISTAKES_GATE FM_GATE_REFUSE_BYPASS=1 FM_HOME=/tmp/tmp.yykIqk6rhk/home \
+    bin/fm-control.sh 'm5-audit-chain-test-double-contamination' relaunch --note 'progress note'
+
+error: herdr caps agent names at 32 characters (lowercase/digits/-/_), but task id 'm5-audit-chain-test-double-contamination' is 40 chars; recreate the task under a shorter id before relaunching
+
+[exit code: 1]
+
+Operator reads: 'herdr caps agent names at 32 characters ... is 40 chars;
+recreate the task under a shorter id before relaunching'. The do_relaunch
+function checks the cap BEFORE do_exit stops the old agent, so the
+operator's existing endpoint is left intact - no stranded agent.
+
+===================================================================
+Scenario C: confirm no stranded per-task lock on refusal
+==================================================================
+
+Before any fm-spawn.sh or fm-control.sh work, the only meta in state/ is
+the one we wrote above. After both refusals:
+
+$ ls '/tmp/tmp.yykIqk6rhk/home/state/'
+
+m5-audit-chain-test-double-contamination.meta
+
+Spawn locks are acquired AFTER the cap check passes (fm-spawn.sh lines
+1326 and 1376 acquire SPAWN_TASK_LOCK only after the cap predicate
+returns 0). With FM_GATE_REFUSE_BYPASS=1 we cleanly verify NO
+.spawn-<id>.lock file exists:
+
+  >>> no .spawn-<id>.lock, no stranded half-built endpoint (CORRECT) <<<
+
+===================================================================
+Scenario D: 32-char id at the cap is NOT refused
+===================================================================
+
+32-char id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' (32 chars)
+
+$ env -u NO_MISTAKES_GATE FM_GATE_REFUSE_BYPASS=1 FM_HOME=/tmp/tmp.yykIqk6rhk/home \
+    FM_SPAWN_NO_GUARD=1 \
+    bin/fm-spawn.sh 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' '/tmp/tmp.yykIqk6rhk/home/projects/none' \
+    --mode no-mistakes --yolo off --backend herdr
+
+bin/fm-spawn.sh: line 2378: cd: /tmp/tmp.yykIqk6rhk/home/projects/none: No such file or directory
+[exit code: 1]
+
+  >>> no cap refusal at 32 chars (CORRECT - cap is inclusive at 32) <<<
+
+Downstream failure here is unrelated: spawn needs a brief in
+$FM_HOME/data/<id>/brief.md and a real workspace dir; the cap check is
+the FIRST thing tested, so the cap must not refuse 32 chars.
+
+===================================================================
+Scenario E: tmux backend is NOT subject to the herdr-only cap
+===================================================================
+
+$ env -u NO_MISTAKES_GATE FM_GATE_REFUSE_BYPASS=1 FM_HOME=/tmp/tmp.yykIqk6rhk/home \
+    FM_SPAWN_NO_GUARD=1 \
+    bin/fm-spawn.sh 'm5-audit-chain-test-double-contamination' '/tmp/tmp.yykIqk6rhk/home/projects/none' \
+    --mode no-mistakes --yolo off --backend tmux
+
+bin/fm-spawn.sh: line 2378: cd: /tmp/tmp.yykIqk6rhk/home/projects/none: No such file or directory
+[exit code: 1]
+
+  >>> no herdr-cap refusal on tmux backend (CORRECT - cap is herdr-only) <<<
+
+===================================================================
+Scenario F: predicate boundary table
+===================================================================
+
+$ ( . bin/fm-backend.sh ; for n in 0 1 31 32 33 40 64 ; do \
+    id=$(printf 'a%.0s' $(seq 1 $n)) ; \
+    if fm_backend_herdr_agent_name_within_cap "$id" ; then \
+      printf '  %3d chars -> accepted\n' "$n" ; \
+    else printf '  %3d chars -> REFUSED\n' "$n" ; fi ; done )
+
+    0 chars -> accepted
+    1 chars -> accepted
+   31 chars -> accepted
+   32 chars -> accepted
+   33 chars -> REFUSED
+   40 chars -> REFUSED
+   64 chars -> REFUSED
+
+===================================================================
+Result: user intent satisfied.
+
+  - fm-spawn fresh spawn refuses 33+ char ids on herdr backend, naming
+    the cap and the offending length, BEFORE any endpoint is created.
+  - fm-spawn --relaunch refuses 33+ char ids on herdr meta.
+  - fm-control relaunch refuses 33+ char ids BEFORE stopping the old
+    agent, so the operator's existing endpoint is preserved.
+  - The check is herdr-only; tmux backend with a too-long id is
+    unaffected.
+  - 32-char ids (cap boundary) pass through; the cap is inclusive.
+  - No per-task spawn lock is acquired on refusal, so the refused
+    task does not strand any half-built endpoint state.
+===================================================================
