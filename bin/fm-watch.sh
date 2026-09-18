@@ -1630,8 +1630,16 @@ esac
 # _wedge_cap_rollback <window> <key> <escalation-file> <since-file>
 _wedge_cap_rollback() {
   local _win=$1 _key=$2 _esc=$3 _since=$4 _failed=0 _first_fail="" _sentinel_rc=0
-  : > "$_esc" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(escalation-file)}"; }
-  date +%s > "$_since" 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(since-file)}"; }
+  # v19 (2026-09-18, follow-up to v18 F1 finding): wrap the rollback reset writes
+  # in braces so bash's redirect-failure diagnostic (e.g. "Is a directory") is
+  # captured by the wrapper's stderr and suppressed by 2>/dev/null - same parity
+  # as the v18 fix at line 1254 for the per-hash marker write and the existing
+  # brace-wrapped writes further down this function. Without the wrapper, an
+  # operator-visible bash diagnostic leaks past the redirect when the path is a
+  # non-empty directory, contradicting the "operator only sees triage_log" intent
+  # this helper is built around.
+  { : > "$_esc"; } 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(escalation-file)}"; }
+  { date +%s > "$_since"; } 2>/dev/null || { _failed=1; _first_fail="${_first_fail:-(since-file)}"; }
   clear_write_tracking "$_key" 2>/dev/null || true
   if [ "$_failed" -ne 0 ]; then
     # Write the sentinel so the next poll sees it (within TTL) and
