@@ -1599,9 +1599,9 @@ esac
 # manually for immediate re-engagement.
 FM_CAP_HORIZON_SECS=${FM_CAP_HORIZON_SECS:-86400}
 case "$FM_CAP_HORIZON_SECS" in
-  ''|*[!0-9]*) triage_log "FM_CAP_HORIZON_SECS='$FM_CAP_HORIZON_SECS' is not a positive integer, falling back to 86400 (local patch 2026-08-19)"
+  ''|*[!0-9]*) triage_log "FM_CAP_HORIZON_SECS='$FM_CAP_HORIZON_SECS' is not a positive integer, falling back to 86400 ()"
               FM_CAP_HORIZON_SECS=86400 ;;
-  0)            triage_log "FM_CAP_HORIZON_SECS=0 would expire the cap immediately and let the cap re-fire every stale interval, falling back to 86400 (local patch 2026-08-19)"
+  0)            triage_log "FM_CAP_HORIZON_SECS=0 would expire the cap immediately and let the cap re-fire every stale interval, falling back to 86400 ()"
               FM_CAP_HORIZON_SECS=86400 ;;
 esac
 
@@ -1612,7 +1612,6 @@ esac
 # into a wake-queue flood. See the v14 comment block in wedge_timer_check
 # for the failure-modes this closes.
 #
-# v15 (2026-09-08, Greptile review of v14): the original v14 used `|| true`
 # on every state-reset line, so a rollback that itself failed (the SAME fs
 # failure that caused the marker write to fail) would silently preserve the
 # saturation and the queue-flood behavior v14 aimed to stop. v15 detects
@@ -1646,8 +1645,7 @@ _wedge_cap_rollback() {
     # short-circuits without writing a durable wake. The sentinel's content
     # is the timestamp of the failure + the first failing reset.
     #
-    # v16 (2026-09-09, Greptile review of v15): the v15 sentinel write
-    # used `{ printf ...; } 2>/dev/null > "$sentinel" || true` which
+        # used `{ printf ...; } 2>/dev/null > "$sentinel" || true` which
     # swallows BOTH the printf's stderr AND bash's redirect-failure
     # diagnostic. If the SAME fs failure that broke the marker write
     # also blocks the sentinel write, the rollback returns 1 (success-
@@ -1686,9 +1684,9 @@ _wedge_cap_rollback() {
 # engagement.
 FM_ROLLBACK_SENTINEL_TTL_SECS=${FM_ROLLBACK_SENTINEL_TTL_SECS:-3600}
 case "$FM_ROLLBACK_SENTINEL_TTL_SECS" in
-  ''|*[!0-9]*) triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS='$FM_ROLLBACK_SENTINEL_TTL_SECS' is not a positive integer, falling back to 3600 (local patch 2026-08-19)"
+  ''|*[!0-9]*) triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS='$FM_ROLLBACK_SENTINEL_TTL_SECS' is not a positive integer, falling back to 3600 ()"
               FM_ROLLBACK_SENTINEL_TTL_SECS=3600 ;;
-  0)            triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS=0 would allow immediate re-fire under persistent fs failures, falling back to 3600 (local patch 2026-08-19)"
+  0)            triage_log "FM_ROLLBACK_SENTINEL_TTL_SECS=0 would allow immediate re-fire under persistent fs failures, falling back to 3600 ()"
               FM_ROLLBACK_SENTINEL_TTL_SECS=3600 ;;
 esac
 

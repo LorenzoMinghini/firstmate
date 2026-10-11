@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # tests/fm-watch-wedge-cap.test.sh - focused unit tests for the
-# FM_WEDGE_MAX_ESCALATIONS cap (local patch 2026-08-19, v6). Verifies:
+# FM_WEDGE_MAX_ESCALATIONS cap . Verifies:
 #   1. cap fires PERMANENTLY-WEDGED at the threshold and writes BOTH
 #      markers: STATE/.wedge-permanent-<key> (window-scoped) and
 #      STATE/.wedge-permanent-<key>-<hash12> (per-hash);
@@ -96,7 +96,7 @@ seen_sig() {
   if [ "$(uname)" = Darwin ]; then stat -f '%z:%Fm' "$1" 2>/dev/null; else stat -c '%s:%Y' "$1" 2>/dev/null; fi
 }
 
-# --- FM_WEDGE_MAX_ESCALATIONS cap (local patch 2026-08-19, v6) ----------------
+# --- FM_WEDGE_MAX_ESCALATIONS cap  ----------------
 # The cap is a hard floor on the LLM-supervised unattended loop that the 2026-
 # 08-18 MiniMax drain (~359M tokens) demonstrated. Past FM_WEDGE_MAX_ESCALATIONS
 # consecutive wedge escalations on the same window, the watcher emits ONE
