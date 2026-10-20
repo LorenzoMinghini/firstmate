@@ -1,0 +1,8 @@
+---- running test_wedge_cap_disabled_by_default
+ok - FM_WEDGE_MAX_ESCALATIONS=0 keeps the cap inert and never writes a cap marker
+---- running test_wedge_cap_releases_after_genuine_recovery
+ok - a genuine recovery clears the cap marker and the re-wedged pane escalates again
+---- running test_wedge_cap_reports_gone_endpoint_while_capped
+ok - a capped window still reports its gone endpoint exactly once across repeated polls
+---- running test_wedge_cap_validates_invalid_overrides
+ok - non-integer FM_WEDGE_MAX_ESCALATIONS falls back to 0 and the cap stays inert

@@ -1,0 +1,84 @@
+2026-10-20T01:35:00Z wedge-cap live run starting
+2026-10-20T01:35:00Z cap=FM_WEDGE_MAX_ESCALATIONS=3 horizon=FM_CAP_HORIZON_SECS=300s stale=FM_STALE_ESCALATE_SECS=2s
+2026-10-20T01:35:00Z tmux tmux 3.4, watcher 01M5BEQG2DNKXRJNM18QWF1E7D/bin/fm-watch.sh at fec46e8
+2026-10-20T01:35:00Z lab home: /tmp/fm-watch-wedge-cap-live.dp2F2L/lab-home
+2026-10-20T01:35:00Z lab tmux server up on /tmp/fml.0PUqQ0/tmux-1001/default with window wedged-lab:wedged
+2026-10-20T01:35:00Z wedged worker recorded as wedged-worker (key=wedged-lab_wedged); its pane holds a live process that has made no progress
+2026-10-20T01:35:00Z part 0: UNCEILED baseline at the shipped default FM_WEDGE_MAX_ESCALATIONS=0
+2026-10-20T01:35:07Z unceiled escalation 1 -> exit=0 woke=1 reason=signal: /tmp/fm-watch-wedge-cap-live.dp2F2L/lab-home/state/wedged-worker.status
+2026-10-20T01:35:11Z pane-hash markers the watcher wrote under a key other than wedged-lab_wedged: 0
+2026-10-20T01:35:17Z unceiled escalation 2 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 1)
+2026-10-20T01:35:25Z unceiled escalation 3 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-20T01:35:33Z unceiled escalation 4 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-20T01:35:41Z unceiled escalation 5 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-20T01:35:43Z UNCEILED: 5 consecutive wakes from one wedged pane with the cap at its default, and nothing bounds the next one
+2026-10-20T01:35:43Z part 1: the SAME workload with FM_WEDGE_MAX_ESCALATIONS=3 (ceiled)
+2026-10-20T01:35:49Z ceiled cycle 1 (first sight: absorbed) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 1)
+2026-10-20T01:35:58Z ceiled cycle 2 (escalation 1) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+2026-10-20T01:36:08Z ceiled cycle 3 (escalation 2) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+2026-10-20T01:36:38Z ceiled cycle 4 (escalation 3: cap threshold) -> exit=alive woke=0 reason=none
+2026-10-20T01:36:41Z ceiled cycles that printed PERMANENTLY-WEDGED: 1 (cap bound is 3)
+2026-10-20T01:36:41Z cap markers on disk: 1
+2026-10-20T01:36:41Z part 1b: the cap must silence the still-wedged pane
+2026-10-20T01:37:08Z silence probe 1 -> exit=alive woke=0 reason=none
+2026-10-20T01:37:38Z silence probe 2 -> exit=alive woke=0 reason=none
+2026-10-20T01:37:40Z ceiled: 2 further polls produced no wake at all (over 59s, inside the 300s horizon)
+2026-10-20T01:37:40Z COMPARISON: same pane, same watcher, same thresholds - 5 wakes unceiled at the default versus 2 silent polls ceiled at 3, with one terminal PERMANENTLY-WEDGED wake instead of a train
+2026-10-20T01:37:40Z part 2: wait out FM_CAP_HORIZON_SECS and confirm the cap releases itself
+2026-10-20T01:37:40Z sleeping 243s so the 300s cap horizon elapses with no operator action
+2026-10-20T01:41:47Z post-horizon cycle 1 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 249s, possible wedge, escalation 1)
+2026-10-20T01:41:55Z post-horizon cycle 2 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+2026-10-20T01:41:58Z post-horizon the pane is audible again with no operator action: cycle 1 woke (stale: wedged-lab:wedged (idle 249s, possible wedge, escalation 1)), cycle 2 woke=1
+2026-10-20T01:41:58Z cap markers on disk after the horizon: 1
+2026-10-20T01:41:58Z SUMMARY: unceiled 5 consecutive wakes at the default; ceiled 1 terminal wake then 2 silent polls at FM_WEDGE_MAX_ESCALATIONS=3; audible again after the 300s horizon with no operator action
+2026-10-20T01:41:58Z wedge-cap live run complete
+ok - the same wedged worker escalates without bound at the default and is capped and then released at FM_WEDGE_MAX_ESCALATIONS=3
+2026-10-20T01:41:58Z 
+2026-10-20T01:41:58Z ----- transcript begin -----
+2026-10-20T01:35:00Z wedge-cap live run starting
+2026-10-20T01:35:00Z cap=FM_WEDGE_MAX_ESCALATIONS=3 horizon=FM_CAP_HORIZON_SECS=300s stale=FM_STALE_ESCALATE_SECS=2s
+2026-10-20T01:35:00Z tmux tmux 3.4, watcher 01M5BEQG2DNKXRJNM18QWF1E7D/bin/fm-watch.sh at fec46e8
+2026-10-20T01:35:00Z lab home: /tmp/fm-watch-wedge-cap-live.dp2F2L/lab-home
+2026-10-20T01:35:00Z lab tmux server up on /tmp/fml.0PUqQ0/tmux-1001/default with window wedged-lab:wedged
+2026-10-20T01:35:00Z wedged worker recorded as wedged-worker (key=wedged-lab_wedged); its pane holds a live process that has made no progress
+2026-10-20T01:35:00Z part 0: UNCEILED baseline at the shipped default FM_WEDGE_MAX_ESCALATIONS=0
+2026-10-20T01:35:07Z unceiled escalation 1 -> exit=0 woke=1 reason=signal: /tmp/fm-watch-wedge-cap-live.dp2F2L/lab-home/state/wedged-worker.status
+signal: /tmp/fm-watch-wedge-cap-live.dp2F2L/lab-home/state/wedged-worker.status
+2026-10-20T01:35:11Z pane-hash markers the watcher wrote under a key other than wedged-lab_wedged: 0
+2026-10-20T01:35:17Z unceiled escalation 2 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 1)
+stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 1)
+2026-10-20T01:35:25Z unceiled escalation 3 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 2)
+stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-20T01:35:33Z unceiled escalation 4 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-20T01:35:41Z unceiled escalation 5 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-20T01:35:43Z UNCEILED: 5 consecutive wakes from one wedged pane with the cap at its default, and nothing bounds the next one
+2026-10-20T01:35:43Z part 1: the SAME workload with FM_WEDGE_MAX_ESCALATIONS=3 (ceiled)
+2026-10-20T01:35:49Z ceiled cycle 1 (first sight: absorbed) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 1)
+stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 1)
+2026-10-20T01:35:58Z ceiled cycle 2 (escalation 1) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+2026-10-20T01:36:08Z ceiled cycle 3 (escalation 2) -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+stale: wedged-lab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+2026-10-20T01:36:38Z ceiled cycle 4 (escalation 3: cap threshold) -> exit=alive woke=0 reason=none
+2026-10-20T01:36:41Z ceiled cycles that printed PERMANENTLY-WEDGED: 1 (cap bound is 3)
+2026-10-20T01:36:41Z cap markers on disk: 1
+2026-10-20T01:36:41Z part 1b: the cap must silence the still-wedged pane
+2026-10-20T01:37:08Z silence probe 1 -> exit=alive woke=0 reason=none
+2026-10-20T01:37:38Z silence probe 2 -> exit=alive woke=0 reason=none
+2026-10-20T01:37:40Z ceiled: 2 further polls produced no wake at all (over 59s, inside the 300s horizon)
+2026-10-20T01:37:40Z COMPARISON: same pane, same watcher, same thresholds - 5 wakes unceiled at the default versus 2 silent polls ceiled at 3, with one terminal PERMANENTLY-WEDGED wake instead of a train
+2026-10-20T01:37:40Z part 2: wait out FM_CAP_HORIZON_SECS and confirm the cap releases itself
+2026-10-20T01:37:40Z sleeping 243s so the 300s cap horizon elapses with no operator action
+2026-10-20T01:41:47Z post-horizon cycle 1 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 249s, possible wedge, escalation 1)
+stale: wedged-lab:wedged (idle 249s, possible wedge, escalation 1)
+2026-10-20T01:41:55Z post-horizon cycle 2 -> exit=0 woke=1 reason=stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+stale: wedged-lab:wedged (idle 2s, possible wedge, escalation 2)
+2026-10-20T01:41:58Z post-horizon the pane is audible again with no operator action: cycle 1 woke (stale: wedged-lab:wedged (idle 249s, possible wedge, escalation 1)), cycle 2 woke=1
+2026-10-20T01:41:58Z cap markers on disk after the horizon: 1
+2026-10-20T01:41:58Z SUMMARY: unceiled 5 consecutive wakes at the default; ceiled 1 terminal wake then 2 silent polls at FM_WEDGE_MAX_ESCALATIONS=3; audible again after the 300s horizon with no operator action
+2026-10-20T01:41:58Z wedge-cap live run complete
+2026-10-20T01:41:58Z 
+2026-10-20T01:41:58Z ----- transcript begin -----
+2026-10-20T01:41:58Z ----- transcript end -----

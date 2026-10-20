@@ -1,0 +1,22 @@
+2026-10-20T01:46:43Z lab home /tmp/fm-lab.r248Cf; real tmux window churn-lab:churning (key=churn-lab_churning) renders a new line every second
+2026-10-20T01:46:43Z cap=2 horizon=3600s stale=2s - driving a pane that re-renders on every poll
+2026-10-20T01:46:48Z churn cycle 1 -> exit=0 woke=1 escalations=absent cap-marker=absent pane-hash=
+2026-10-20T01:46:48Z     reason=signal: /tmp/fm-lab.r248Cf/state/churning-worker.status
+2026-10-20T01:46:58Z churn cycle 2 -> exit=0 woke=1 escalations=1 cap-marker=absent pane-hash=2935563f
+2026-10-20T01:46:58Z     reason=stale: churn-lab:churning (idle 2s, possible wedge, escalation 1)
+2026-10-20T01:47:09Z churn cycle 3 -> exit=0 woke=1 escalations= cap-marker=present pane-hash=46f9b2b9
+2026-10-20T01:47:09Z     reason=stale: churn-lab:churning (idle 3s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+2026-10-20T01:47:13Z pane hashes observed across cycles: 2 captured, 2 distinct (a churning pane must render a new hash every poll)
+2026-10-20T01:47:13Z terminal PERMANENTLY-WEDGED wakes across the churn: 1
+2026-10-20T01:47:40Z post-cap churn poll 1 -> exit=alive woke=0 escalations= cap-marker=present pane-hash=7e0cb321
+2026-10-20T01:47:40Z     reason=none
+2026-10-20T01:48:10Z post-cap churn poll 2 -> exit=alive woke=0 escalations= cap-marker=present pane-hash=f4ee1413
+2026-10-20T01:48:10Z     reason=none
+2026-10-20T01:48:13Z polls after the cap, on a pane that keeps re-rendering: 2 produced no wake
+2026-10-20T01:48:13Z the crew resumes: the pane stops re-rendering (a settled worker at its prompt) and its busy record goes, so it leaves the stale path
+2026-10-20T01:48:21Z post-recovery poll 1 -> exit=0 woke=1 escalations=absent cap-marker=absent pane-hash=1a8d8d54
+2026-10-20T01:48:21Z     reason=stale: churn-lab:churning
+2026-10-20T01:48:24Z after the crew resumed and settled: cap-marker=absent pane-audible-again=1
+2026-10-20T01:48:24Z     the pane escalated again through a fresh counter: 
+2026-10-20T01:48:24Z SUMMARY: a real pane re-rendering on every poll escalated 2 time(s) before the cap, received exactly 1 PERMANENTLY-WEDGED wake across the churn, stayed silent for 2 further polls, and after the crew resumed lost its cap marker and became audible again with no operator action
+2026-10-20T01:48:24Z churn probe complete
