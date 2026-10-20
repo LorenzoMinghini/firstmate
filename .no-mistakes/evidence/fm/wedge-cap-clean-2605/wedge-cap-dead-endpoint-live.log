@@ -1,0 +1,24 @@
+00:20:15Z lab tmux up on /tmp/fml.Ge6Ajj/tmux-1001/default; window deadlab:wedged runs a wedged agent that turns into a bare shell at t+150s
+00:20:16Z the product's own classifier reads this live pane as: ambiguous
+00:20:16Z part 1: drive the ceiled wedge until the cap engages on the live wedged pane
+00:20:22Z wedge cycle 1 -> cycle 1 exit=0 woke=1 reason=signal: /tmp/fm-lab.deadend.vDBleA/state/dead-worker.status
+00:20:33Z wedge cycle 2 -> cycle 2 exit=0 woke=1 reason=stale: deadlab:wedged (idle 2s, possible wedge, escalation 1)
+00:20:42Z wedge cycle 3 -> cycle 3 exit=0 woke=1 reason=stale: deadlab:wedged (idle 3s, possible wedge, escalation 2)
+00:20:52Z wedge cycle 4 -> cycle 4 exit=0 woke=1 reason=stale: deadlab:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+00:20:52Z    (this cycle published PERMANENTLY-WEDGED)
+00:20:55Z cap markers on disk while capped: 1
+00:20:55Z part 2: with the cap marker standing, the still-wedged pane stays silent
+00:21:46Z silence probe while capped -> cycle 5 exit=alive woke=0 reason=none
+00:21:50Z part 3: adversarial - the pane's agent disappears while the cap marker stands and the pane renders the identical frame
+00:22:45Z pane foreground command now: bash
+00:22:46Z the product's own classifier reads the same pane as: dead
+00:22:46Z the cap marker still stands: 1
+00:22:49Z capped poll after the agent vanished -> cycle 6 exit=0 woke=1 reason=stale: deadlab:wedged (idle 62s, agent dead - the endpoint is still there with no agent running in it, so this is not a wedge; reported once and not re-escalated while it stays that way - reconcile this record, and check for unlanded work before any cleanup)
+00:22:52Z reason after the death: stale: deadlab:wedged (idle 62s, agent dead - the endpoint is still there with no agent running in it, so this is not a wedge; reported once and not re-escalated while it stays that way - reconcile this record, and check for unlanded work before any cleanup)
+00:22:52Z PASS: a capped window reported the vanished agent instead of staying silent
+00:22:52Z the death was reported, not escalated as a possible wedge
+00:22:52Z part 4: the death is delivered once, not once per poll
+00:23:44Z capped poll 1 after the death was reported -> cycle 7 exit=alive woke=0 reason=none
+00:24:38Z capped poll 2 after the death was reported -> cycle 8 exit=alive woke=0 reason=none
+00:24:41Z SUMMARY: the cap silenced the live wedge, and a worker that then vanished behind the identical pane frame was still reported exactly once while capped
+00:24:41Z wedge-cap dead-endpoint live run complete

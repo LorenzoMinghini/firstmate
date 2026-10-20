@@ -1,0 +1,62 @@
+22:26:23 adversarial live run against ~/.no-mistakes/worktrees/8b845ac61faf/01M5B2S1473QHD6N51XA7DHWYR/bin/fm-watch.sh
+22:26:24 fixture: real pane wedge-adv:wedged running a process whose name classifies as an agent, re-rendering every second, busy record armed; thresholds stale=2s horizon=3600s cap=0
+22:26:24 A. CONTROL: FM_WEDGE_MAX_ESCALATIONS=0 (the shipped default) on the re-rendering pane
+22:26:34 control prime (wedge timer armed, nothing due yet) -> exit=0 woke=1 queue_rows=1 counter=1 marker=absent
+22:26:34     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 1)
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 1)
+22:26:45 control cycle 1 -> exit=0 woke=1 queue_rows=1 counter=2 marker=absent
+22:26:45     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 2)
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 2)
+22:26:54 control cycle 2 -> exit=0 woke=1 queue_rows=1 counter=3 marker=absent
+22:26:54     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+22:27:03 control cycle 3 -> exit=0 woke=1 queue_rows=1 counter=4 marker=absent
+22:27:03     reason: stale: wedge-adv:wedged (idle 2s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+    queued: stale: wedge-adv:wedged (idle 2s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+22:27:12 control cycle 4 -> exit=0 woke=1 queue_rows=1 counter=5 marker=absent
+22:27:12     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+22:27:15 A. control: 4/4 polls of a re-rendering wedge escalated with the cap at its default, and no cap marker was written
+22:27:15 B. CAP ON at 2: the same pane must get exactly one terminal PERMANENTLY-WEDGED wake
+22:27:24 capped prime (wedge timer armed, nothing due yet) -> exit=0 woke=1 queue_rows=1 counter=1 marker=absent
+22:27:24     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 1)
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 1)
+22:27:34 capped cycle 1 -> exit=0 woke=1 queue_rows=1 counter=empty marker=present
+22:27:34     reason: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+    queued: stale: wedge-adv:wedged (idle 3s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+22:27:37 B. the cap fired once at the bound and wrote state/.wedge-permanent-wedge-adv_wedged
+22:27:37 C. ADVERSARIAL: more polls of the still-wedged, still-re-rendering pane under the fired cap
+22:28:20 post-cap churn poll 1 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:28:20     reason: none
+22:29:05 post-cap churn poll 2 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:29:05     reason: none
+22:29:51 post-cap churn poll 3 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:29:51     reason: none
+22:30:38 post-cap churn poll 4 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:30:38     reason: none
+22:30:41 C. 4/4 polls of a pane that re-rendered on every one of them published nothing and advanced no counter
+22:30:41 D. operator escape hatch: rm the window-scoped cap marker inside the horizon
+22:30:45 first poll after the cap marker was removed -> exit=0 woke=1 queue_rows=1 counter=1 marker=absent
+22:30:45     reason: stale: wedge-adv:wedged (idle 9s, possible wedge, escalation 1)
+    queued: stale: wedge-adv:wedged (idle 9s, possible wedge, escalation 1)
+22:30:48 D. the window is audible again on the very next poll after the marker was removed
+22:30:48 E. ADVERSARIAL: with the cap fired again, the agent process is replaced by a plain shell
+22:30:56 re-fire cycle 1 -> exit=0 woke=1 queue_rows=1 counter=empty marker=present
+22:30:56     reason: stale: wedge-adv:wedged (idle 2s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+    queued: stale: wedge-adv:wedged (idle 2s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+22:31:08 capped poll with the endpoint present but running no agent -> exit=0 woke=1 queue_rows=1 counter=empty marker=present
+22:31:08     reason: stale: wedge-adv:wedged (idle 3s, agent dead - the endpoint is still there with no agent running in it, so this is not a wedge; reported once and not re-escalated while it stays that way - reconcile this record, and check for unlanded work before any cleanup)
+    queued: stale: wedge-adv:wedged (idle 3s, agent dead - the endpoint is still there with no agent running in it, so this is not a wedge; reported once and not re-escalated while it stays that way - reconcile this record, and check for unlanded work before any cleanup)
+22:31:11 E. the capped window reported the dead endpoint once
+22:31:54 repeat capped poll 1 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:31:54     reason: none
+22:32:42 repeat capped poll 2 -> exit=alive woke=0 queue_rows=0 counter=empty marker=present
+22:32:42     reason: none
+22:32:45 E. two further capped polls repeated nothing and kept the cap marker
+22:32:45 F. the crew completes its turn: the pane leaves the stale path
+22:32:50 poll after the completed turn -> exit=0 woke=1 queue_rows=2 counter=empty marker=present
+22:32:50     reason: signal: /tmp/fm-wedge-cap-adv.HXMpOf/lab-home/state/wedged-worker.turn-ended
+    queued: signal: /tmp/fm-wedge-cap-adv.HXMpOf/lab-home/state/wedged-worker.turn-ended
+    queued: signal: /tmp/fm-wedge-cap-adv.HXMpOf/lab-home/state/wedged-worker.turn-ended
+FAIL: the window-scoped cap marker survived the pane leaving the stale path
+EXIT=1
