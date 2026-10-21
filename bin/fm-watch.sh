@@ -1386,8 +1386,8 @@ _wedge_cap_terminal_append() {
   return "$_status"
 }
 
-# _wedge_cap_rollback: reset the per-window wedge state after a cap-marker
-# write failure so the next poll re-accumulates from escalation 1 instead of
+# _wedge_cap_rollback: reset the per-window wedge state after a failed
+# cap-state write so the next poll re-accumulates from escalation 1 instead of
 # inheriting the saturated counter and an expired stale timer that would
 # amplify a single write failure into a wake-queue flood. On rollback
 # failure a transient `.wedge-rollback-failed-<key>` sentinel is written so
@@ -1936,9 +1936,10 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
   _wkey=$(window_key "$win")
   # Cap-fire short-circuit: a previous poll wrote a rollback-failure sentinel,
   # from either route that has to defend cap state this state dir would not
-  # persist - the cap-marker write whose own rollback also failed, or the
-  # escalation-count write below, whose failed write left the ceiling that count
-  # bounds unenforceable. Within FM_ROLLBACK_SENTINEL_TTL_SECS the wedge path is silent -
+  # persist - the cap-marker write whose own rollback also failed, the
+  # escalation-count write whose failed write left the ceiling that count
+  # bounds unenforceable, or the cap-fire counter reset whose failed reset
+  # leaves the saturated counter standing. Within FM_ROLLBACK_SENTINEL_TTL_SECS the wedge path is silent -
   # no wake, no marker write - so the operator observes one failure per
   # wedge-event instead of a wake-queue flood under persistent fs failure.
   # Read only where the cap is configured: with FM_WEDGE_MAX_ESCALATIONS at its
@@ -2123,7 +2124,15 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
           fi
           wedge_episode_end "$_wkey" 1
           clear_write_tracking "$_wkey"
-          : > "$escalation_file"
+          if ! { : > "$escalation_file"; } 2>/dev/null; then
+            _wrb_rm_status=0
+            _wedge_cap_rollback "$_wkey" "$escalation_file" "$since_file" || _wrb_rm_status=$?
+            case "$_wrb_rm_status" in
+              2) triage_log "wedge escalation-counter reset FAILED AND rollback AND sentinel write ALL FAILED on $win - the counter stays saturated once the marker's horizon elapses; operator MUST intervene"; exit 1 ;;
+              1) triage_log "wedge escalation-counter reset FAILED AND rollback ALSO FAILED on $win - sentinel set (TTL $FM_ROLLBACK_SENTINEL_TTL_SECS); no wake-amplification"; exit 1 ;;
+              *) triage_log "wedge escalation-counter reset FAILED on $win - cap state rolled back"; exit 1 ;;
+            esac
+          fi
           triage_log "wedge permanently capped: $win (escalation $n, max $FM_WEDGE_MAX_ESCALATIONS, hash ${hash:0:12})"
           [ "$_wrb_cap_status" -eq 3 ] || wake "$_wrb_cap_reason"
           return 0
