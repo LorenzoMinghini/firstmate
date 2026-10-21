@@ -1,0 +1,80 @@
+2026-10-21T11:28:43Z lab home /tmp/fm-lab.tG5wit; tmux socket /tmp/fml.SwT9PC/tmux-1001/default; watcher tree ~/.no-mistakes/worktrees/8b845ac61faf/01M5F1PTQH43K09NV8Y43HNXKS
+2026-10-21T11:28:43Z real tmux pane wedgelab:pane holds a real process that has made no progress (key=wedgelab_pane)
+2026-10-21T11:28:44Z status signal scan primed through fm_wake_status_mark_current
+2026-10-21T11:28:44Z busy record armed (gen=g1792582124.260544.27842) through bin/fm-busy-event.sh
+2026-10-21T11:28:44Z crew state for the wedged crew: state: unknown · source: none · worktree gone (torn down?)
+2026-10-21T11:28:44Z === arm B: upstream main's own watcher, cap unset (the oracle: today's behaviour) ===
+2026-10-21T11:28:44Z upstream main watcher: /tmp/fm-lab.tG5wit/upstream-main/bin/fm-watch.sh (2c93247)
+2026-10-21T11:28:44Z --- arm upstream: bin/ ---
+2026-10-21T11:28:59Z rung1 rc=0 esc=1 inspect=0 capped=0 counter=1 secs=14 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 1)
+2026-10-21T11:29:29Z rung2 rc=0 esc=2 inspect=0 capped=0 counter=2 secs=15 reason=stale: wedgelab:pane (idle 5s, possible wedge, escalation 2)
+2026-10-21T11:29:44Z surface rc=0 esc=- inspect=0 capped=0 counter=2 secs=7 reason=stale: wedgelab:pane
+2026-10-21T11:30:06Z rung3 rc=0 esc=3 inspect=1 capped=0 counter=3 secs=15 reason=stale: wedgelab:pane (idle 6s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:30:28Z rung4 rc=0 esc=4 inspect=1 capped=0 counter=4 secs=14 reason=stale: wedgelab:pane (idle 5s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:30:52Z rung5 rc=0 esc=5 inspect=1 capped=0 counter=5 secs=16 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:30:58Z arm upstream final marker=0
+2026-10-21T11:30:58Z === arm A: this branch's watcher, cap unset (the maintainer's ask) ===
+2026-10-21T11:30:58Z --- arm branch-unset: bin/ ---
+2026-10-21T11:31:18Z rung1 rc=0 esc=1 inspect=0 capped=0 counter=1 secs=18 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 1)
+2026-10-21T11:31:36Z rung2 rc=0 esc=2 inspect=0 capped=0 counter=2 secs=11 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 2)
+2026-10-21T11:31:51Z surface rc=0 esc=- inspect=0 capped=0 counter=2 secs=8 reason=stale: wedgelab:pane
+2026-10-21T11:32:08Z rung3 rc=0 esc=3 inspect=1 capped=0 counter=3 secs=11 reason=stale: wedgelab:pane (idle 5s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:32:25Z rung4 rc=0 esc=4 inspect=1 capped=0 counter=4 secs=11 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:32:41Z rung5 rc=0 esc=5 inspect=1 capped=0 counter=5 secs=11 reason=stale: wedgelab:pane (idle 5s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:32:47Z arm branch-unset final marker=0
+2026-10-21T11:32:47Z === arm C: this branch's watcher, cap configured at 3 (the opt-in half) ===
+2026-10-21T11:32:47Z --- arm branch-cap3: bin/ ---
+2026-10-21T11:32:57Z rung1 rc=0 esc=1 inspect=0 capped=0 counter=1 secs=10 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 1)
+2026-10-21T11:33:15Z rung2 rc=0 esc=2 inspect=0 capped=0 counter=2 secs=12 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 2)
+2026-10-21T11:33:25Z surface rc=0 esc=- inspect=0 capped=0 counter=- secs=5 reason=stale: wedgelab:pane
+2026-10-21T11:33:41Z rung3 rc=0 esc=1 inspect=0 capped=0 counter=1 secs=11 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 1)
+2026-10-21T11:33:58Z rung4 rc=0 esc=2 inspect=0 capped=0 counter=2 secs=10 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 2)
+2026-10-21T11:34:16Z rung5 rc=0 esc=3 inspect=1 capped=1 counter=- secs=8 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=3 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+2026-10-21T11:34:22Z arm branch-cap3 final marker=1
+2026-10-21T11:34:22Z === arm D: this branch's watcher, cap = a value bash cannot compare ===
+2026-10-21T11:34:22Z --- arm branch-outofrange: bin/ ---
+2026-10-21T11:34:32Z rung1 rc=0 esc=1 inspect=0 capped=0 counter=1 secs=10 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 1)
+2026-10-21T11:34:50Z rung2 rc=0 esc=2 inspect=0 capped=0 counter=2 secs=11 reason=stale: wedgelab:pane (idle 3s, possible wedge, escalation 2)
+2026-10-21T11:35:05Z surface rc=0 esc=- inspect=0 capped=0 counter=2 secs=9 reason=stale: wedgelab:pane
+2026-10-21T11:35:28Z rung3 rc=0 esc=3 inspect=1 capped=0 counter=3 secs=12 reason=stale: wedgelab:pane (idle 5s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:35:47Z rung4 rc=0 esc=4 inspect=1 capped=0 counter=4 secs=12 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:36:05Z rung5 rc=0 esc=5 inspect=1 capped=0 counter=5 secs=11 reason=stale: wedgelab:pane (idle 4s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+2026-10-21T11:36:11Z arm branch-outofrange final marker=0
+2026-10-21T11:36:11Z PASS: arm A (branch, cap unset) is byte-identical to arm B (upstream main, cap unset): an unconfigured home keeps today's behaviour
+2026-10-21T11:36:11Z PASS: arm D (cap = 99999999999999999999) is byte-identical to arm A (cap unset): an unusable cap value is read as an invalid one, so the home keeps today's behaviour and the cap never engages
+2026-10-21T11:36:11Z 
+2026-10-21T11:36:11Z ----- traces -----
+2026-10-21T11:36:11Z --- /tmp/fm-lab.tG5wit/trace-branch-unset ---
+rung1 esc=1 inspect=0 capped=0 counter=1
+rung2 esc=2 inspect=0 capped=0 counter=2
+surface esc=- inspect=0 capped=0 counter=2
+rung3 esc=3 inspect=1 capped=0 counter=3
+rung4 esc=4 inspect=1 capped=0 counter=4
+rung5 esc=5 inspect=1 capped=0 counter=5
+final marker=0
+2026-10-21T11:36:11Z --- /tmp/fm-lab.tG5wit/trace-upstream ---
+rung1 esc=1 inspect=0 capped=0 counter=1
+rung2 esc=2 inspect=0 capped=0 counter=2
+surface esc=- inspect=0 capped=0 counter=2
+rung3 esc=3 inspect=1 capped=0 counter=3
+rung4 esc=4 inspect=1 capped=0 counter=4
+rung5 esc=5 inspect=1 capped=0 counter=5
+final marker=0
+2026-10-21T11:36:11Z --- /tmp/fm-lab.tG5wit/trace-branch-cap3 ---
+rung1 esc=1 inspect=0 capped=0 counter=1
+rung2 esc=2 inspect=0 capped=0 counter=2
+surface esc=- inspect=0 capped=0 counter=-
+rung3 esc=1 inspect=0 capped=0 counter=1
+rung4 esc=2 inspect=0 capped=0 counter=2
+rung5 esc=3 inspect=1 capped=1 counter=-
+final marker=1
+2026-10-21T11:36:11Z --- /tmp/fm-lab.tG5wit/trace-branch-outofrange ---
+rung1 esc=1 inspect=0 capped=0 counter=1
+rung2 esc=2 inspect=0 capped=0 counter=2
+surface esc=- inspect=0 capped=0 counter=2
+rung3 esc=3 inspect=1 capped=0 counter=3
+rung4 esc=4 inspect=1 capped=0 counter=4
+rung5 esc=5 inspect=1 capped=0 counter=5
+final marker=0
+2026-10-21T11:36:11Z ----- end traces -----
+2026-10-21T11:36:11Z LIVE RESULT: all arms behaved as required
