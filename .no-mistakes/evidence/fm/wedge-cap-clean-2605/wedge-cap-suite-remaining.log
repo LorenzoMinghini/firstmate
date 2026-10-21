@@ -1,0 +1,7 @@
+ok - an escalation count the state dir refuses fails safe under a configured cap and silences nothing without one
+ok - a window silenced by the rollback-failure sentinel keeps the probe on its escalation cadence, not once per poll
+ok - a genuine recovery clears the cap marker and the re-wedged pane escalates again
+ok - a persistent marker-write failure across two cap cycles queues exactly one PERMANENTLY-WEDGED wake
+ok - a declared wait and its lift both release the cap markers, and the re-wedged pane escalates again
+ok - a capped window still reports its gone endpoint exactly once across repeated polls
+ok - a new wedge episode publishes its own terminal wake behind an unconsumed earlier one
