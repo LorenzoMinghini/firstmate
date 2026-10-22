@@ -1,0 +1,83 @@
+SCENARIO sentinel-routes
+  Each of the three cap-state write failures in turn, each on a fresh lab.
+
+===== route: marker-write
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+watcher exit status: 1; one-shot fault fired: yes
+watcher output:
+operator triage log (tail):
+    | [2026-10-22T18:21:15+0200] absorbed benign signal: /tmp/fm-lab.ZKrzGn/state/wedge1.status
+    | [2026-10-22T18:21:22+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+    | [2026-10-22T18:21:41+0200] wedge cap-marker write FAILED on fmlab:fm-wedge1 - cap state rolled back
+
+===== state after: the refused marker-write
+cap marker .wedge-permanent-fmlab_fm-wedge1:  absent
+escalation counter:                []
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      PRESENT (1792686101)
+PERMANENTLY-WEDGED rows in queue:  1
+wake-queue bytes:                  347
+
+===== route: count-write
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+watcher exit status: 1; one-shot fault fired: yes
+watcher output:
+operator triage log (tail):
+    | [2026-10-22T18:21:46+0200] absorbed benign signal: /tmp/fm-lab.MKU1PY/state/wedge1.status
+    | [2026-10-22T18:21:51+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+    | [2026-10-22T18:22:11+0200] wedge escalation counter write FAILED on fmlab:fm-wedge1 - cap state rolled back and the wedge path silenced (TTL 3600), since a ceiling whose count cannot be recorded cannot stop the next poll's escalation; operator can rm the sentinel for immediate re-engagement
+
+===== state after: the refused count-write
+cap marker .wedge-permanent-fmlab_fm-wedge1:  absent
+escalation counter:                []
+rollback-failure sentinel:         PRESENT
+idle timer .stale-since-fmlab_fm-wedge1:      PRESENT (1792686131)
+PERMANENTLY-WEDGED rows in queue:  0
+wake-queue bytes:                  0
+
+===== route: reset-write
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+watcher exit status: 1; one-shot fault fired: yes
+watcher output:
+operator triage log (tail):
+    | [2026-10-22T18:22:16+0200] absorbed benign signal: /tmp/fm-lab.Z8rR1D/state/wedge1.status
+    | [2026-10-22T18:22:22+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+    | [2026-10-22T18:22:42+0200] wedge escalation-counter reset FAILED on fmlab:fm-wedge1 - escalation count rolled back; the cap marker stands, so this window stays silent until its horizon (FM_CAP_HORIZON_SECS) elapses or an episode-ending route releases it (an operator can delete the marker to re-engage at once)
+
+===== state after: the refused reset-write
+cap marker .wedge-permanent-fmlab_fm-wedge1:  PRESENT (1792686162)
+escalation counter:                []
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      PRESENT (1792686162)
+PERMANENTLY-WEDGED rows in queue:  1
+wake-queue bytes:                  347

@@ -1,0 +1,80 @@
+SCENARIO reset-fault
+  FM_WEDGE_MAX_ESCALATIONS=2. The cap fires, and the escalation-counter reset
+  that ends its episode is refused ONCE (EIO); the rollback that follows succeeds.
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+pane hash the real watcher recorded: ebf6467863b0be2f1853ce10b0d9a980
+one-shot write fault fired: yes
+
+===== the operator line, checked against the state on disk
+[2026-10-22T19:01:38+0200] wedge escalation-counter reset FAILED on fmlab:fm-wedge1 - escalation count rolled back; the cap marker stands, so this window stays silent until its horizon (FM_CAP_HORIZON_SECS) elapses or an episode-ending route releases it (an operator can delete the marker to re-engage at once)
+  claim 'escalation count rolled back' VERIFIED on disk: the counter is empty, not saturated at the bound
+  claim 'the cap marker stands' VERIFIED on disk: .wedge-permanent-fmlab_fm-wedge1 is present
+  no rollback-failure sentinel: the rollback itself succeeded, the tier the line above names
+
+===== operator triage log (tail)
+[2026-10-22T19:01:15+0200] absorbed benign signal: /tmp/fm-lab.zxBl9q/state/wedge1.status
+[2026-10-22T19:01:23+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+[2026-10-22T19:01:38+0200] wedge escalation-counter reset FAILED on fmlab:fm-wedge1 - escalation count rolled back; the cap marker stands, so this window stays silent until its horizon (FM_CAP_HORIZON_SECS) elapses or an episode-ending route releases it (an operator can delete the marker to re-engage at once)
+
+===== durable wake queue
+    | stale	stale: fmlab:fm-wedge1 (idle 504s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+
+===== state after: the refused post-fire escalation-counter reset
+cap marker .wedge-permanent-fmlab_fm-wedge1:  PRESENT (1792688497)
+escalation counter:                []
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      PRESENT (1792688498)
+PERMANENTLY-WEDGED rows in queue:  1
+wake-queue bytes:                  347
+
+===== next poll of the same wedged pane, cap still configured, marker standing
+[silent poll] watcher exit status: 124   (124 = still running when the bound elapsed)
+[silent poll] watcher output: nothing - no wake delivered
+wake-queue bytes before/after the silent poll: 347 / 347
+  claim 'this window stays silent' VERIFIED: no wake queued while the marker stands
+triage tail after the silent poll:
+    | [2026-10-22T19:01:15+0200] absorbed benign signal: /tmp/fm-lab.zxBl9q/state/wedge1.status
+    | [2026-10-22T19:01:23+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+    | [2026-10-22T19:01:38+0200] wedge escalation-counter reset FAILED on fmlab:fm-wedge1 - escalation count rolled back; the cap marker stands, so this window stays silent until its horizon (FM_CAP_HORIZON_SECS) elapses or an episode-ending route releases it (an operator can delete the marker to re-engage at once)
+
+===== operator deletes the cap marker (STATE/.wedge-permanent-fmlab_fm-wedge1)
+[after operator rm] watcher exit status: 0   (124 = still running when the bound elapsed)
+[after operator rm] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 511s, possible wedge, escalation 1)
+  claim 'an operator can delete the marker to re-engage at once' VERIFIED: the very next poll escalated this window again
+
+===== state after: the operator's re-engagement
+cap marker .wedge-permanent-fmlab_fm-wedge1:  absent
+escalation counter:                [1]
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      absent
+PERMANENTLY-WEDGED rows in queue:  1
+wake-queue bytes:                  447
+
+===== and the same release through horizon expiry instead of an operator rm
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+cap marker back-dated 5s, FM_CAP_HORIZON_SECS=1: the horizon has elapsed
+[past the horizon] watcher exit status: 0   (124 = still running when the bound elapsed)
+[past the horizon] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 506s, possible wedge, escalation 1)
+  claim 'until its horizon elapses' VERIFIED: the ladder resumed once the marker aged out

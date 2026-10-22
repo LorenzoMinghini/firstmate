@@ -1,0 +1,62 @@
+SCENARIO cap-off
+  No FM_WEDGE_MAX_ESCALATIONS at all: an unconfigured home keeps today's ladder.
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+
+===== operator triage log after the prime poll (tail)
+[2026-10-22T18:20:16+0200] absorbed benign signal: /tmp/fm-lab.M6Q4Wd/state/wedge1.status
+[2026-10-22T18:20:24+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+[ladder rung 1] watcher exit status: 0   (124 = still running when the bound elapsed)
+[ladder rung 1] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 504s, possible wedge, escalation 1)
+    escalation counter now: [1]
+    cap marker: absent
+[ladder rung 2] watcher exit status: 0   (124 = still running when the bound elapsed)
+[ladder rung 2] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 504s, possible wedge, escalation 2)
+    escalation counter now: [2]
+    cap marker: absent
+[ladder rung 3] watcher exit status: 0   (124 = still running when the bound elapsed)
+[ladder rung 3] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+    escalation counter now: [3]
+    cap marker: absent
+[ladder rung 4] watcher exit status: 0   (124 = still running when the bound elapsed)
+[ladder rung 4] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 502s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+    escalation counter now: [4]
+    cap marker: absent
+[ladder rung 5] watcher exit status: 0   (124 = still running when the bound elapsed)
+[ladder rung 5] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+    escalation counter now: [5]
+    cap marker: absent
+
+===== operator triage log (tail)
+[2026-10-22T18:20:16+0200] absorbed benign signal: /tmp/fm-lab.M6Q4Wd/state/wedge1.status
+[2026-10-22T18:20:24+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+
+===== durable wake queue
+    | stale	stale: fmlab:fm-wedge1 (idle 504s, possible wedge, escalation 1)
+    | stale	stale: fmlab:fm-wedge1 (idle 504s, possible wedge, escalation 2)
+    | stale	stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 3, demand-deep-inspection: same pane has wedge-escalated 3 times in a row - do not re-absorb on the run-step/pane state alone)
+    | stale	stale: fmlab:fm-wedge1 (idle 502s, possible wedge, escalation 4, demand-deep-inspection: same pane has wedge-escalated 4 times in a row - do not re-absorb on the run-step/pane state alone)
+    | stale	stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 5, demand-deep-inspection: same pane has wedge-escalated 5 times in a row - do not re-absorb on the run-step/pane state alone)
+
+===== state after: five uncapped wedge escalations
+cap marker .wedge-permanent-fmlab_fm-wedge1:  absent
+escalation counter:                [5]
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      absent
+PERMANENTLY-WEDGED rows in queue:  0
+0
+wake-queue bytes:                  872

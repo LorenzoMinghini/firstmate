@@ -1,0 +1,13 @@
+# root-execution probe for tests/fm-watch-wedge-cap.test.sh's root guard
+# date: 2026-10-22T17:00:48Z
+
+$ id -u
+1001
+$ id
+uid=1001(nostradamus) gid=1001(nostradamus) groups=1001(nostradamus),27(sudo),100(users),988(docker)
+
+$ sudo -n true   # a root shell would let the suite run as uid 0
+sudo: a password is required
+
+$ unshare -Ur id -u   # a user-namespace uid 0 has the same DAC_OVERRIDE the guard is about
+unshare: write failed /proc/self/uid_map: Operation not permitted

@@ -1,0 +1,37 @@
+SCENARIO cap-healthy
+  FM_WEDGE_MAX_ESCALATIONS=2 on a state dir that accepts every cap-state write.
+
+--- the live pane the watcher read (real tmux capture-pane of fmlab:fm-wedge1) ---
+╭─ crew: no-mistakes pipeline ──────────────────────────────╮
+│ > re-run the pipeline and fix every review finding        │
+│                                                           │
+│   ✓ read 214 files                                        │
+│   ✓ code review  · 3 findings                              │
+│   ⣾ no-mistakes validating (round 1)                      │
+│                                                           │
+│   esc to interrupt · ctrl+c to exit                       │
+╰───────────────────────────────────────────────────────────╯
+[cap fire] watcher exit status: 0   (124 = still running when the bound elapsed)
+[cap fire] watcher output (the wake it published):
+    | stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+
+===== operator triage log (tail)
+[2026-10-22T18:19:19+0200] absorbed benign signal: /tmp/fm-lab.j2cK4n/state/wedge1.status
+[2026-10-22T18:19:26+0200] absorbed non-terminal stale (provably working): fmlab:fm-wedge1
+[2026-10-22T18:19:44+0200] wedge permanently capped: fmlab:fm-wedge1 (escalation 2, max 2, hash ebf6467863b0)
+
+===== durable wake queue
+    | stale	stale: fmlab:fm-wedge1 (idle 503s, possible wedge, escalation 2), PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=2 reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>
+
+===== state after: a healthy cap fire
+cap marker .wedge-permanent-fmlab_fm-wedge1:  PRESENT (1792685984)
+escalation counter:                []
+rollback-failure sentinel:         absent
+idle timer .stale-since-fmlab_fm-wedge1:      absent
+PERMANENTLY-WEDGED rows in queue:  1
+wake-queue bytes:                  347
+
+===== the next poll while the marker stands
+[silent poll] watcher exit status: 124   (124 = still running when the bound elapsed)
+[silent poll] watcher output: nothing - no wake delivered
+wake-queue bytes before/after the silent poll: 347 / 347
