@@ -2094,10 +2094,13 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
         # marker check whatever hash they render. The terminal wake carries the
         # same evidence the escalation it replaces would have carried, because
         # it is the only one this window publishes for the rest of the horizon.
-        # The marker-write failure rolls back cap state to avoid amplifying a
-        # single write failure into a queue flood; a rollback that itself fails
-        # writes a transient sentinel so the next polls stay silent for
-        # FM_ROLLBACK_SENTINEL_TTL_SECS.
+        # Every cap-state write on this route - the escalation count above, the
+        # cap marker, and the escalation-counter reset the fire ends its episode
+        # with - takes that one three-tier defence, so a state dir that refuses
+        # any of them is never walked past with cap state it did not take: roll
+        # the cap state back rather than amplify a single write failure into a
+        # queue flood, and where the rollback itself fails write a transient
+        # sentinel so the next polls stay silent for FM_ROLLBACK_SENTINEL_TTL_SECS.
         if [ "$FM_WEDGE_MAX_ESCALATIONS" -gt 0 ] && [ "$n" -ge "$FM_WEDGE_MAX_ESCALATIONS" ]; then
           _wrb_cap_reason="$reason, PERMANENTLY-WEDGED: FM_WEDGE_MAX_ESCALATIONS=$FM_WEDGE_MAX_ESCALATIONS reached - no further wedge escalations for this WINDOW while its cap marker stands: until FM_CAP_HORIZON_SECS elapses, the crew resumes, or the operator manually removes STATE/.wedge-permanent-<key>"
           _wrb_cap_reason=$(stale_reason_naming_dialog "$_wrb_cap_reason" "$dialog")
@@ -2124,6 +2127,14 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
           fi
           wedge_episode_end "$_wkey" 1
           clear_write_tracking "$_wkey"
+          # The reset is cap state like the count write above it, and the one
+          # whose failure the horizon would otherwise hide: it is what lets the
+          # count climb a fresh 1..N once the cap marker expires, so a state dir
+          # that refuses it leaves the counter saturated at the bound and the
+          # first post-horizon threshold would re-fire this terminal silence
+          # instead of escalating. The cycle ends in every failure tier, so the
+          # capped wake never goes out inline off a reset that failed; the durable
+          # terminal row this fire already queued stands for the drain.
           if ! { : > "$escalation_file"; } 2>/dev/null; then
             _wrb_rm_status=0
             _wedge_cap_rollback "$_wkey" "$escalation_file" "$since_file" || _wrb_rm_status=$?
