@@ -1935,7 +1935,7 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
   local _wrb_since _wrb_now _wrb_age _wrb_cap_ts _wrb_gate
   _wkey=$(window_key "$win")
   # Cap-fire short-circuit: a previous poll wrote a rollback-failure sentinel,
-  # from either route that has to defend cap state this state dir would not
+  # from any of the routes that have to defend cap state this state dir would not
   # persist - the cap-marker write whose own rollback also failed, the
   # escalation-count write whose failed write left the ceiling that count
   # bounds unenforceable, or the cap-fire counter reset whose failed reset
@@ -2141,7 +2141,7 @@ wedge_timer_check() {  # <window> <since-file> <triage-label> <escalation-count-
             case "$_wrb_rm_status" in
               2) triage_log "wedge escalation-counter reset FAILED AND rollback AND sentinel write ALL FAILED on $win - the counter stays saturated once the marker's horizon elapses; operator MUST intervene"; exit 1 ;;
               1) triage_log "wedge escalation-counter reset FAILED AND rollback ALSO FAILED on $win - sentinel set (TTL $FM_ROLLBACK_SENTINEL_TTL_SECS); no wake-amplification"; exit 1 ;;
-              *) triage_log "wedge escalation-counter reset FAILED on $win - cap state rolled back"; exit 1 ;;
+              *) triage_log "wedge escalation-counter reset FAILED on $win - escalation count rolled back; the cap marker stands, so this window stays silent until its horizon (FM_CAP_HORIZON_SECS) elapses"; exit 1 ;;
             esac
           fi
           triage_log "wedge permanently capped: $win (escalation $n, max $FM_WEDGE_MAX_ESCALATIONS, hash ${hash:0:12})"

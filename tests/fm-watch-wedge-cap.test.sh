@@ -999,7 +999,17 @@ test_wedge_cap_sentinel_probe_keeps_its_cadence() {
 # wedge path through the sentinel when the rollback cannot clean it either, and
 # end the cycle before the capped wake is delivered inline; the row the fire
 # already queued stays durable for the drain.
+#
+# The fault is a mode, and a mode does not restrict root, so under root the shim's
+# chmod 444 would leave the reset writable, the guard would never fire and this case
+# would fail on its own exit-code assertion. Skip it there the way the rest of the
+# suite's mode-based faults do (tests/fm-control-relaunch.test.sh, tests/fm-claude-trust.test.sh),
+# so the suite behaves the same whether it runs as root or as the ordinary user.
 test_wedge_cap_unwritable_counter_reset_fails_safe() {
+  if [ "$(id -u)" = 0 ]; then
+    pass "a refused escalation-counter reset fails safe instead of carrying a saturated counter (skipped as root)"
+    return 0
+  fi
   local dir state out capture_file window key pane_hash sig fakebin max pid round_status sentinel real_rm queue_before
   dir=$(make_case wedge-cap-reset-fail); state="$dir/state"; capture_file="$dir/pane.txt"
   out="$dir/watch.out"; fakebin="$dir/fakebin"
