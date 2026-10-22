@@ -1,0 +1,43 @@
+2026-10-22T09:41:29Z == ARM-D unconfigured home (no FM_WEDGE_MAX_ESCALATIONS at all) with the counter file never writable ==
+2026-10-22T09:41:29Z watcher: ~/.no-mistakes/worktrees/8b845ac61faf/01M5H99YV8374277W16TR2XHXG/bin/fm-watch.sh (df4b1b0)
+2026-10-22T09:41:29Z lab: /tmp/fmfault.hHCAv9/lab-home state: /tmp/fmfault.hHCAv9/lab-home/state window: wedge-lab:wedged key: wedge-lab_wedged
+2026-10-22T09:41:29Z pane is a real process: bash pid=2135757
+2026-10-22T09:41:29Z capture: claude> working (elapsed 00:00:01)||||||||||||||||||||||||
+2026-10-22T09:41:38Z cycle[first-sight] fault=0 exit=0 woke=1 reason=signal: /tmp/fmfault.hHCAv9/lab-home/state/wedged-worker.status
+2026-10-22T09:41:38Z   watcher stdout/stderr: signal: /tmp/fmfault.hHCAv9/lab-home/state/wedged-worker.status
+2026-10-22T09:41:38Z   delivered wake lines in this cycle: 0
+0
+2026-10-22T09:41:38Z   triage tail: 
+2026-10-22T09:41:38Z   counter=<absent> mode=- sentinel=absent permanent=absent queued-terminal-rows=0
+2026-10-22T09:41:48Z cycle[escalation-1] fault=0 exit=0 woke=1 reason=stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 1)
+2026-10-22T09:41:48Z   watcher stdout/stderr: stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 1)
+2026-10-22T09:41:48Z   delivered wake lines in this cycle: 1
+2026-10-22T09:41:48Z   triage tail: [2026-10-22T11:41:42+0200] absorbed busy (no completed turn) timer reset: wedge-lab:wedged|
+2026-10-22T09:41:48Z   counter=1 mode=664 sentinel=absent permanent=absent queued-terminal-rows=0
+2026-10-22T09:42:01Z cycle[cap-fire] fault=1 exit=0 woke=1 reason=stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:01Z   watcher stdout/stderr: stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:02Z   delivered wake lines in this cycle: 1
+2026-10-22T09:42:02Z   triage tail: [2026-10-22T11:41:54+0200] absorbed busy (no completed turn) timer reset: wedge-lab:wedged|[2026-10-22T11:41:59+0200] wedge_timer_check: escalation counter write FAILED for wedge-lab:wedged (/tmp/fmfault.hHCAv9/lab-home/state/.wedge-escalations-wedge-lab_wedged); the next poll restarts this window's count at 1|
+2026-10-22T09:42:02Z   counter=1 mode=444 sentinel=absent permanent=absent queued-terminal-rows=0
+2026-10-22T09:42:14Z cycle[post-escalation-2] fault=0 exit=0 woke=1 reason=stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:14Z   watcher stdout/stderr: stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:14Z   delivered wake lines in this cycle: 1
+2026-10-22T09:42:14Z   triage tail: [2026-10-22T11:42:09+0200] absorbed busy (no completed turn) timer reset: wedge-lab:wedged|[2026-10-22T11:42:13+0200] wedge_timer_check: escalation counter write FAILED for wedge-lab:wedged (/tmp/fmfault.hHCAv9/lab-home/state/.wedge-escalations-wedge-lab_wedged); the next poll restarts this window's count at 1|
+2026-10-22T09:42:14Z   counter=1 mode=444 sentinel=absent permanent=absent queued-terminal-rows=0
+2026-10-22T09:42:23Z cycle[post-escalation-3] fault=0 exit=0 woke=1 reason=stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:23Z   watcher stdout/stderr: stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:23Z   delivered wake lines in this cycle: 1
+2026-10-22T09:42:23Z   triage tail: [2026-10-22T11:42:17+0200] absorbed busy (no completed turn) timer reset: wedge-lab:wedged|[2026-10-22T11:42:22+0200] wedge_timer_check: escalation counter write FAILED for wedge-lab:wedged (/tmp/fmfault.hHCAv9/lab-home/state/.wedge-escalations-wedge-lab_wedged); the next poll restarts this window's count at 1|
+2026-10-22T09:42:23Z   counter=1 mode=444 sentinel=absent permanent=absent queued-terminal-rows=0
+2026-10-22T09:42:32Z cycle[after-cap-fire] fault=0 exit=0 woke=1 reason=stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:32Z   watcher stdout/stderr: stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:32Z   delivered wake lines in this cycle: 1
+2026-10-22T09:42:32Z   triage tail: [2026-10-22T11:42:26+0200] absorbed busy (no completed turn) timer reset: wedge-lab:wedged|[2026-10-22T11:42:31+0200] wedge_timer_check: escalation counter write FAILED for wedge-lab:wedged (/tmp/fmfault.hHCAv9/lab-home/state/.wedge-escalations-wedge-lab_wedged); the next poll restarts this window's count at 1|
+2026-10-22T09:42:32Z   counter=1 mode=444 sentinel=absent permanent=absent queued-terminal-rows=0
+--- wake queue after the cap fire ---
+  stale	stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 1)
+  stale	stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+  stale	stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+  stale	stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+  stale	stale: wedge-lab:wedged (idle 3s, possible wedge, escalation 2)
+2026-10-22T09:42:32Z end of arm
