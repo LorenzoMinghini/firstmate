@@ -1,0 +1,9 @@
+ok - FM_WEDGE_MAX_ESCALATIONS=0 keeps the cap inert and never writes a cap marker
+ok - non-integer FM_WEDGE_MAX_ESCALATIONS falls back to 0 and the cap stays inert
+ok - with the cap off, a leftover cap marker or rollback-failure sentinel silences nothing
+ok - an escalation counter the shell cannot compare is read as a fresh count of 1, never as a count the arithmetic wrapped around
+ok - a counter reset the state dir refuses ends the cycle behind the sentinel instead of walking out with a saturated counter
+ok - every first-sight route that ends a wedge episode releases that episode's cap and lets the next wedge escalate
+ok - a non-terminal stale poll ends the episode, releases the cap, and lets the fresh wedge escalate immediately
+tests/fm-watch-wedge-cap-selected.test.sh: line 1810: test_wedge_cap_reports_gone_endpoint_on_terminal_override_route: command not found
+ok - a cap fired on the terminal-override route still reports a gone endpoint exactly once

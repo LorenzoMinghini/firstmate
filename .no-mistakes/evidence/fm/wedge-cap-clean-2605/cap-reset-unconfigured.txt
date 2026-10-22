@@ -1,0 +1,5 @@
+== arm unconfigured (cap: <unset>) ==
+busy-rung1: escalation 1 | counter=1
+busy-rung2: escalation 2 | counter=2
+first-sight-surface: wake=stale: test:fm-cap-reset-manual | counter after surface=2
+re-wedge-rung: escalation 3 + demand-deep-inspection | counter=3

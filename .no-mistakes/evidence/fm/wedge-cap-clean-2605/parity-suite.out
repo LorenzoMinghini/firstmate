@@ -1,0 +1,3 @@
+ok - unconfigured-home wedge ladder is observably identical to upstream main across the busy ladder and the first-sight surface, and still reaches the demand-deep-inspection prompt
+ok - FM_WEDGE_MAX_ESCALATIONS at 0, empty, negative, non-numeric, and out-of-range all keep the unchanged ladder through the keep-count routes: 1 2 3 4 with demand-deep-inspection at 3, no PERMANENTLY-WEDGED, no cap marker, no crash
+ok - the harness really delivers FM_WEDGE_MAX_ESCALATIONS to the watcher: a configured cap of 2 fires PERMANENTLY-WEDGED at count 2 and leaves its marker standing, while every unconfigured value leaves the ladder untouched
