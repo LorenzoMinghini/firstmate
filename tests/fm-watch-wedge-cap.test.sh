@@ -1002,9 +1002,10 @@ test_wedge_cap_sentinel_probe_keeps_its_cadence() {
 #
 # The fault is a mode, and a mode does not restrict root, so under root the shim's
 # chmod 444 would leave the reset writable, the guard would never fire and this case
-# would fail on its own exit-code assertion. Skip it there the way the rest of the
-# suite's mode-based faults do (tests/fm-control-relaunch.test.sh, tests/fm-claude-trust.test.sh),
-# so the suite behaves the same whether it runs as root or as the ordinary user.
+# would fail on its own exit-code assertion. Skip it there the way this repository's
+# other test files skip their mode-bit faults - tests/fm-control-relaunch.test.sh
+# chmods a state directory to 000 for that same reason - so this suite behaves the
+# same whether it runs as root or as the ordinary user.
 test_wedge_cap_unwritable_counter_reset_fails_safe() {
   if [ "$(id -u)" = 0 ]; then
     pass "a refused escalation-counter reset fails safe instead of carrying a saturated counter (skipped as root)"
