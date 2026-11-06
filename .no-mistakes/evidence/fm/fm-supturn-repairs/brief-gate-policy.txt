@@ -1,0 +1,7 @@
+# Brief gate-policy opt-in (bin/fm-brief.sh), lab home /tmp/fm-lab.8xToyP
+off-state  (no opt-in):                     'Validation gate policy' occurrences = 0
+on-state   (relcfg tuning brief_gate_policy=1, RELATIVE FM_CONFIG_OVERRIDE=relcfg from $LAB cwd): occurrences = 1; Spend at most 3 fix rounds
+wrong-cwd  (same relative override, cwd lacks relcfg): occurrences = 0  (loader + brief resolve identically: no divergence)
+env-wins   (FM_BRIEF_GATE_POLICY=0 beats file brief_gate_policy=1): occurrences = 0
+off-state vs pre-change base brief (bf05a4f), task id normalized:
+BYTE-IDENTICAL (no stray blank line)

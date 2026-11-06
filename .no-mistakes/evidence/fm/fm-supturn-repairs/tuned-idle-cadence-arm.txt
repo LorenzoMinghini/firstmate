@@ -1,0 +1,23 @@
+# Arm/watcher effective-poll cadence + leading-zero tuning (bin/fm-watch-arm.sh + bin/fm-watch.sh), lab home /tmp/fm-lab.ipsK1W
+date: 2026-11-06 ~21:57-22:15 UTC
+
+tuning file: config/supervision-tuning = idle_poll_secs=01800   (LEADING ZERO)
+
+## lab tmux pane at startup:
+export FM_HOME=/tmp/fm-lab.ipsK1W; bin/fm-watch-arm.sh
+watcher: started pid=236726 (beacon fresh)
+
+## cadence observations:
+t+10m26s: watcher pid 236726 alive (etime 10:26), beacon_age=626s
+t+17m30s: watcher pid 236726 alive (etime 17:30), beacon_age=1050s, arm still attached, cycle ledger clean, no FAILED line
+
+## interpretation (oracle: docs/turnend-guard.md formula max(300, effective_poll+60)):
+effective poll = max(FM_POLL=15, idle 1800 parsed from '01800') = 1800 => grace = max(300,1860) = 1860, stall bound = 5580.
+At beacon_age=1050s the OLD fast-poll bounds (grace 300, stall bound 900) would have declared this healthy holder
+stale/evicted; the arm followed it past 900s without failure => arm grace/stall now derive from the SAME effective
+cadence the watcher waits on. '01800' parsed as decimal 1800 with no invalid-octal arithmetic abort (old code would
+abort the loader/wake-lib arithmetic).
+
+## teardown:
+export FM_HOME=/tmp/fm-lab.ipsK1W; bin/fm-watch-arm.sh --stop  =>  watcher: stopped pid=236726
+tmux -L fm-lab kill-server; lab home removed
