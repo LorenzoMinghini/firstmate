@@ -1,0 +1,4 @@
+1..9
+not ok - fresh herdr refusal must name the 32-char cap (missing: 'herdr caps agent names at 32 characters')
+--- output ---
+/tmp/fm-cap-noguard.MdEcMP/bin/fm-spawn.sh: line 4168: cd: /tmp/fm-spawn-herdr-name-cap.Odcs3F/fresh-herdr-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/home/projects/none: No such file or directory
